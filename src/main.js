@@ -9,6 +9,8 @@ import { drawGround, drawStone, drawGoal, drawStartMarker, drawWater, drawRoad, 
 import { drawBackdrop, drawGroundDecor, drawRoadSigns, paletteFor } from './backdrop.js';
 import { drawBullets } from './hunters.js';
 import { drawFood } from './foodSprites.js';
+import { drawLogo, LOGO_W, LOGO_H } from './logo.js';
+import { whenFontReady } from './text.js';
 import { drawPaused, drawPopups, drawHud, drawTitle, drawDying, drawGameOver, drawWon, drawDebug } from './ui.js';
 
 const screen = document.getElementById('game');
@@ -38,8 +40,26 @@ function update(dt) {
 function resize() {
   // Full upplösning på skärmen (även på skarpa skärmar), så pixlarna blir tydliga
   const dpr = window.devicePixelRatio || 1;
-  screen.width = Math.round(window.innerWidth * dpr);
-  screen.height = Math.round(window.innerHeight * dpr);
+  screen.width = Math.max(1, Math.round(screen.clientWidth * dpr));
+  screen.height = Math.max(1, Math.round(screen.clientHeight * dpr));
+  drawHeaderLogo();
+}
+
+// Loggan i sidhuvudet: samma logga som på startskärmen, ritad i skarp upplösning.
+const logoCanvas = document.getElementById('logo');
+function drawHeaderLogo() {
+  if (!logoCanvas || getComputedStyle(document.getElementById('top')).display === 'none') return;
+  const dpr = window.devicePixelRatio || 1;
+  const s = window.innerHeight >= 760 ? 2 : 1; // större logga om det finns plats
+  logoCanvas.style.width = LOGO_W * s + 'px';
+  logoCanvas.style.height = LOGO_H * s + 'px';
+  logoCanvas.width = Math.round(LOGO_W * s * dpr);
+  logoCanvas.height = Math.round(LOGO_H * s * dpr);
+  const lctx = logoCanvas.getContext('2d');
+  lctx.setTransform(1, 0, 0, 1, 0, 0);
+  lctx.clearRect(0, 0, logoCanvas.width, logoCanvas.height);
+  lctx.scale(s * dpr, s * dpr);
+  drawLogo(lctx, 0, 0, 1);
 }
 
 function drawLevel(camX) {
@@ -161,5 +181,11 @@ function render() {
 if (import.meta.env.DEV) window.__game = game;
 
 window.addEventListener('resize', resize);
+if (window.ResizeObserver) new ResizeObserver(resize).observe(document.getElementById('stage'));
 resize();
-startLoop(update, render);
+
+// Vänta på pixeltypsnittet innan spelet börjar, så att texten inte blinkar till.
+whenFontReady().then(() => {
+  drawHeaderLogo();
+  startLoop(update, render);
+});

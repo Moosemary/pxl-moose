@@ -1,14 +1,86 @@
+/* Pixeltypsnittet Press Start 2P (SIL Open Font License, se src/fonts/OFL.txt) */
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('./fonts/PressStart2P-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  --bg: #1b1a17;
+  --soft: #cfc8b0;
+  --accent: #e0c050;
+}
+
 html,
 body {
   margin: 0;
   height: 100%;
-  background: #1b1a17;
+  background: var(--bg);
+  color: var(--soft);
+  font-family: 'Press Start 2P', monospace;
+  font-variant-ligatures: none;
   overflow: hidden;
 }
 
-canvas {
+/* Sidan: logga överst, spelet i mitten, footer längst ned */
+#page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+#top {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  padding: 10px 12px 6px;
+}
+
+#logo {
   display: block;
-  width: 100vw;
-  height: 100vh;
+}
+
+#stage {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+#game {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
   image-rendering: pixelated;
+}
+
+#bottom {
+  flex: none;
+  text-align: center;
+  font-size: 8px;
+  line-height: 14px;
+  padding: 6px 12px 10px;
+}
+
+#bottom a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(224, 192, 80, 0.4);
+}
+
+#bottom a:hover,
+#bottom a:focus-visible {
+  color: #fff4c0;
+  border-bottom-color: #fff4c0;
+  outline: none;
+}
+
+/* Låga fönster: släng loggan i sidhuvudet så att spelet får plats */
+@media (max-height: 520px) {
+  #top {
+    display: none;
+  }
 }

@@ -1,20 +1,13 @@
-// Text, poäng, liv och skärmar – allt ritas med kod.
+// Poäng, liv och skärmar – allt ritas med kod.
 import { VIEW_W, VIEW_H, START_LIVES } from './config.js';
 import { COLORS } from './tiles.js';
-import { drawMoose } from './mooseSprite.js';
 import { audio } from './audio.js';
+import { drawLogo, LOGO_W } from './logo.js';
+import { text } from './text.js';
 
-const FONT = 'monospace';
-
-function text(ctx, str, x, y, { size = 8, color = COLORS.text, align = 'left', bold = true } = {}) {
-  ctx.font = `${bold ? 'bold ' : ''}${size}px ${FONT}`;
-  ctx.textAlign = align;
-  ctx.textBaseline = 'top';
-  ctx.fillStyle = '#1b1a17';
-  ctx.fillText(str, x + 1, y + 1);
-  ctx.fillStyle = color;
-  ctx.fillText(str, x, y);
-}
+const YELLOW = '#e0c050';
+const SOFT = '#cfc8b0';
+const MAX_W = VIEW_W - 16; // texten ska aldrig gå ut över kanten
 
 const HEART = [
   '.##.##.',
@@ -39,15 +32,15 @@ export function drawHud(ctx, game) {
   text(ctx, 'LIV', 6, 6);
   const slots = Math.max(START_LIVES, game.lives);
   for (let i = 0; i < slots; i++) {
-    drawHeart(ctx, 30 + i * 10, 6, i < game.lives ? '#c0452b' : '#4a3a34');
+    drawHeart(ctx, 36 + i * 10, 7, i < game.lives ? '#c0452b' : '#4a3a34');
   }
   text(ctx, 'POÄNG ' + String(game.score).padStart(6, '0'), VIEW_W - 6, 6, { align: 'right' });
-  drawSpeaker(ctx, VIEW_W - 16, 18);
+  drawSpeaker(ctx, VIEW_W - 16, 19);
 }
 
 export function drawPopups(ctx, game, camX) {
   for (const pop of game.popups) {
-    text(ctx, pop.text, Math.round(pop.x - camX), Math.round(pop.y), { align: 'center', color: '#e0c050' });
+    text(ctx, pop.text, Math.round(pop.x - camX), Math.round(pop.y), { align: 'center', color: YELLOW });
   }
 }
 
@@ -79,65 +72,63 @@ function blink(game) {
 export function drawTitle(ctx, game) {
   dim(ctx, 0.62);
 
-  // Stor älg
-  ctx.save();
-  ctx.translate(VIEW_W - 45, 146);
-  ctx.scale(3, 3);
-  drawMoose(ctx, 0, 0, -1, 0, true, 0);
-  ctx.restore();
+  // Loggan i dubbel storlek
+  drawLogo(ctx, (VIEW_W - LOGO_W * 2) / 2, 10, 2);
 
-  text(ctx, 'PXL MOOSE', VIEW_W / 2, 14, { size: 28, align: 'center' });
-  text(ctx, 'Så spelar du', 40, 62, { color: '#e0c050' });
-  text(ctx, '← → eller A D   gå', 40, 76);
-  text(ctx, 'Mellanslag eller ↑   hoppa', 40, 88);
-  text(ctx, 'Hoppa på björnar, vargar och hundar.', 40, 104);
-  text(ctx, 'Akta dig för jägare och trafik!', 40, 116);
-  text(ctx, 'Rösen sparar var du börjar om.', 40, 128);
-  text(ctx, 'Ta dig till flaggan. Du har tre liv.', 40, 140);
-
-  drawSpeaker(ctx, VIEW_W / 2 - 52, 192);
-  text(ctx, 'M: ljud av/på', VIEW_W / 2 - 40, 192, { color: '#cfc8b0' });
+  const cx = VIEW_W / 2;
+  text(ctx, 'HUR DU SPELAR', cx, 108, { align: 'center', color: YELLOW });
+  text(ctx, 'A D eller pilar: gå', cx, 124, { align: 'center' });
+  text(ctx, 'Mellanslag eller upp: hoppa', cx, 136, { align: 'center' });
+  text(ctx, 'Hoppa på fiender, samla mat', cx, 148, { align: 'center' });
+  text(ctx, 'Akta dig för jägare och trafik', cx, 160, { align: 'center' });
+  text(ctx, 'Rösen sparar var du börjar om', cx, 172, { align: 'center' });
 
   if (blink(game)) {
-    text(ctx, 'Tryck mellanslag eller Enter', VIEW_W / 2, 170, { align: 'center', color: '#e0c050' });
+    text(ctx, 'Tryck mellanslag eller Enter', cx, 192, { align: 'center', color: YELLOW });
   }
+  text(ctx, 'P: paus    M: ljud av/på', cx, 208, { align: 'center', color: SOFT });
 }
 
 export function drawPaused(ctx) {
   dim(ctx, 0.6);
-  text(ctx, 'PAUS', VIEW_W / 2, 70, { size: 28, align: 'center' });
-  text(ctx, 'P, Esc eller mellanslag: fortsätt', VIEW_W / 2, 118, { align: 'center', color: '#e0c050' });
-  text(ctx, 'M: ljud av/på', VIEW_W / 2, 134, { align: 'center', color: '#cfc8b0' });
+  text(ctx, 'PAUS', VIEW_W / 2, 70, { size: 32, align: 'center' });
+  text(ctx, 'P, Esc eller mellanslag: fortsätt', VIEW_W / 2, 118, { align: 'center', color: YELLOW, maxWidth: MAX_W });
+  text(ctx, 'M: ljud av/på', VIEW_W / 2, 134, { align: 'center', color: SOFT });
 }
 
 export function drawDying(ctx, game) {
   dim(ctx, 0.35);
-  text(ctx, game.deathText || 'Du ramlade!', VIEW_W / 2, VIEW_H / 2 - 8, { size: 16, align: 'center' });
+  text(ctx, game.deathText || 'Du ramlade!', VIEW_W / 2, VIEW_H / 2 - 8, {
+    size: 16,
+    align: 'center',
+    maxWidth: MAX_W,
+  });
 }
 
 export function drawGameOver(ctx, game) {
   dim(ctx, 0.7);
-  text(ctx, 'MOOSE OVER', VIEW_W / 2, 62, { size: 28, align: 'center', color: '#c0452b' });
-  text(ctx, 'Poäng: ' + game.score, VIEW_W / 2, 108, { size: 12, align: 'center' });
+  text(ctx, 'MOOSE OVER', VIEW_W / 2, 62, { size: 24, align: 'center', color: '#c0452b' });
+  text(ctx, 'Poäng: ' + game.score, VIEW_W / 2, 108, { size: 16, align: 'center', maxWidth: MAX_W });
   if (game.timer === 0 && blink(game)) {
-    text(ctx, 'Tryck mellanslag för att börja om', VIEW_W / 2, 150, { align: 'center', color: '#e0c050' });
+    text(ctx, 'Tryck mellanslag för att börja om', VIEW_W / 2, 150, { align: 'center', color: YELLOW, maxWidth: MAX_W });
   }
 }
 
 export function drawWon(ctx, game) {
   dim(ctx, 0.6);
-  text(ctx, 'DU VANN!', VIEW_W / 2, 62, { size: 28, align: 'center', color: '#e0c050' });
-  text(ctx, 'Älgen nådde målet', VIEW_W / 2, 96, { size: 10, align: 'center' });
-  text(ctx, 'Poäng: ' + game.score, VIEW_W / 2, 112, { size: 12, align: 'center' });
+  text(ctx, 'DU VANN!', VIEW_W / 2, 56, { size: 32, align: 'center', color: YELLOW });
+  text(ctx, 'Älgen nådde målet', VIEW_W / 2, 100, { size: 16, align: 'center', maxWidth: MAX_W });
+  text(ctx, 'Poäng: ' + game.score, VIEW_W / 2, 124, { size: 16, align: 'center', maxWidth: MAX_W });
   if (game.timer === 0 && blink(game)) {
-    text(ctx, 'Tryck mellanslag för att spela igen', VIEW_W / 2, 150, { align: 'center', color: '#e0c050' });
+    text(ctx, 'Tryck mellanslag för att spela igen', VIEW_W / 2, 160, { align: 'center', color: YELLOW, maxWidth: MAX_W });
   }
 }
 
 export function drawDebug(ctx, game, tickRate, targetRate) {
   const p = game.player;
-  ctx.fillStyle = '#00000088';
-  ctx.fillRect(2, 18, 150, 24);
-  text(ctx, `x ${Math.round(p.x)}  y ${Math.round(p.y)}  ${game.level.biomeAt(Math.floor(p.x / 16))}`, 5, 20, { bold: false });
-  text(ctx, `uppdateringar/s: ${tickRate} (ska vara ${targetRate})`, 5, 31, { bold: false });
+  const mono = { font: 'monospace', size: 8 };
+  ctx.fillStyle = '#000000aa';
+  ctx.fillRect(2, 30, 168, 24);
+  text(ctx, `x ${Math.round(p.x)}  y ${Math.round(p.y)}  ${game.level.biomeAt(Math.floor(p.x / 16))}`, 5, 32, mono);
+  text(ctx, `uppdateringar/s: ${tickRate} (ska vara ${targetRate})`, 5, 43, mono);
 }

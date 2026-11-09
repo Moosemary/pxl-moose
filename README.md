@@ -4,7 +4,7 @@ Ett retro-plattformsspel i 2D, i stil med Super Mario Bros, där du styr en pixl
 
 **Spela:** https://moosemary.github.io/pxl-moose/
 
-Allt körs i webbläsaren. All grafik och allt ljud skapas med kod (canvas och Web Audio) – det finns inga bild- eller ljudfiler.
+Allt körs i webbläsaren. All grafik och allt ljud skapas med kod (canvas och Web Audio) – det finns inga bild- eller ljudfiler. Loggan, med spelets älg, ritas också med kod. Det enda externa är typsnittet (se nedan).
 
 ## Så spelar du
 
@@ -62,6 +62,12 @@ Tekniskt är det Vite och vanlig JavaScript, ritat på en `<canvas>`, utan spelm
 
 Varje push till `main` bygger och publicerar spelet på GitHub Pages med GitHub Actions (se `.github/workflows/deploy.yml`). Under *Settings → Pages* ska *Source* vara *GitHub Actions*.
 
+## Typsnitt och logga
+
+Texten använder pixeltypsnittet [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P) (SIL Open Font License 1.1). Fontfilen ligger i repot (`src/fonts/`, tillsammans med licenstexten), så ingenting hämtas från Google när någon spelar. Typsnittet saknar versalt Å (det ritas som ett vanligt A), så undvik det i versaler. Gemena å, ä, ö och versalerna Ä och Ö fungerar.
+
+Loggan ritas i [`src/logo.js`](src/logo.js) och används både på startskärmen och i sidhuvudet. Sidans footer ("Made by Moosemary Digital") ligger i [`index.html`](index.html).
+
 ## Kodöversikt
 
 | Fil | Innehåll |
@@ -73,3 +79,4 @@ Varje push till `main` bygger och publicerar spelet på GitHub Pages med GitHub 
 | `src/level.js`, `src/levelParser.js` | Banan och hur den läses |
 | `src/backdrop.js`, `src/tiles.js`, `src/mooseSprite.js`, `src/foodSprites.js` | Grafik |
 | `src/audio.js` | Ljud |
+| `src/text.js`, `src/logo.js`, `src/fonts/` | Text, logga och typsnitt |
