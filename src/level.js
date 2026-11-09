@@ -12,6 +12,8 @@
 //   ~   vatten (älgen kan simma: håll hoppknappen för att simma uppåt).
 //       Gör en sjö genom att fylla rutor med ~ och ha mark (#) under.
 //   P   startpunkt
+//   F   kontrollpunkt (ett röse). Rör älgen det börjar den om där efter att ha ramlat
+//       i ett hål, i stället för vid starten.
 //   G   mål
 //
 //   k   saftig kvist av sälg/vide (10 poäng)
@@ -32,28 +34,30 @@
 // =====================================================================
 
 export const LEVEL_ROWS = [
-  '                                                                                                                                  ',
-  '                                                                                                                                  ',
-  '                                                                                                                                  ',
-  '                                                                                                                                  ',
-  '                                                                                                                                  ',
-  '                                                                                                                                  ',
-  '                                          kk                                                                                      ',
-  '                                    g     SS                                                         b                            ',
-  '        b                           S    SSS              bb  kk                                                                  ',
-  '        S     kkk     kk     b     SS   SSSS          gg      SS                          S                   g                   ',
-  ' P  k  SS  W       gggSS J        SSS  SSSSS   k kBk  SS      SSS W g g kJb   H           S kk     U    C    gg      R       kGk  ',
-  '##############   ###########   #########################~~~~~#################################==============####------------######',
-  '##############   ###########   #########################~~~~~#####################################################################',
-  '##############   ###########   ###################################################################################################',
+  '                                                                                                                                                                                                                                                                      ',
+  '                                                                                                                                                                                                                                                                      ',
+  '                                                                                                                                                                                                                                                                      ',
+  '                                                                                                                                                                                                                                                                      ',
+  '                                                                                                                                                                                                                                                                      ',
+  '                                                                                                                                                                                                                                                                      ',
+  '                                                                                                                                                                                                                                                                      ',
+  '                                        b                                                                                                                                       b                                                                                     ',
+  '         b     k               k        S     k                                                        k          bb   b                  b    k         b             k     b  S              b     b                                                                ',
+  '         S    k k        SS   k k      SSS   k k       S                      k k k   S              Sk k         SS   S    S             SS  k k        S            k k   SS  S           k  k  k  k  k                                                             ',
+  ' P      SS        gg  W  SS J      B  SSSSS     b F W  S    J gg kkg      gS        k S   H  g g b  kS    F k B  SSSS WSk J Sgbk k  J   g SSk     F g W bS  b B     J     F SSkkS J  kb                     k  F b  SW          U    C    F        R            G     ',
+  '##############   #############   ############   #############################~~~~~~~##################   #####################################   #####################   #################~~~~~S~~~~~S~~~~~~##############==============######------------############',
+  '##############   #############   ############   #############################~~~~~~~##################   #####################################   #####################   #################~~~~~S~~~~~S~~~~~~##########################################################',
+  '##############   #############   ############   ######################################################   #####################################   #####################   #############################################################################################',
 ];
 
 // Miljöer anges som kolumnintervall (från och med – till och med).
 // sight = hur långt (i pixlar, 16 per ruta) en jägare ser älgen i den miljön.
 // På kalhygget finns inga träd som skymmer, så där syns älgen från långt håll.
+// Namnen styr också hur landskapet ser ut: granskog, lövskog, kalhygge, vattendrag, vägen.
 export const BIOMES = [
-  { name: 'granskog', from: 0, to: 29, sight: 110 },
-  { name: 'lövskog', from: 30, to: 59, sight: 130 },
-  { name: 'kalhygge', from: 60, to: 89, sight: 240 },
-  { name: 'vägen', from: 90, to: 999, sight: 220 },
+  { name: 'granskog', from: 0, to: 64, sight: 110 },
+  { name: 'lövskog', from: 65, to: 124, sight: 130 },
+  { name: 'kalhygge', from: 125, to: 184, sight: 240 },
+  { name: 'vattendrag', from: 185, to: 209, sight: 200 },
+  { name: 'vägen', from: 210, to: 999, sight: 220 },
 ];

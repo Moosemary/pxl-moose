@@ -32,8 +32,9 @@ export class Player {
     this.respawn();
   }
 
-  respawn() {
-    const { start } = this.level;
+  /** Startar om vid startpunkten, eller vid en kontrollpunkt ({col,row}). */
+  respawn(point = null) {
+    const start = point ?? this.level.start;
     this.x = start.col * TILE + (TILE - this.w) / 2;
     this.y = (start.row + 1) * TILE - this.h;
     this.vx = 0;

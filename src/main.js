@@ -4,7 +4,7 @@ import { input } from './input.js';
 import { startLoop, STEP } from './loop.js';
 import { VIEW_W, VIEW_H } from './config.js';
 import { Game } from './game.js';
-import { drawGround, drawStone, drawGoal, drawStartMarker, drawWater, drawRoad, drawRail } from './tiles.js';
+import { drawGround, drawStone, drawGoal, drawStartMarker, drawWater, drawRoad, drawRail, drawCheckpoint } from './tiles.js';
 import { drawBackdrop, drawGroundDecor, drawRoadSigns, paletteFor } from './backdrop.js';
 import { drawBullets } from './hunters.js';
 import { drawFood } from './foodSprites.js';
@@ -57,6 +57,10 @@ function drawLevel(camX) {
 
   drawGroundDecor(ctx, level, camX, firstCol, lastCol, occupiedCols);
   drawRoadSigns(ctx, game.roads, camX);
+  for (const c of game.checkpoints) {
+    if (c.col < firstCol - 1 || c.col > lastCol + 1) continue;
+    drawCheckpoint(ctx, c.col * TILE - camX, c.row * TILE, c.active, game.ticks);
+  }
 
   for (const road of game.roads) road.draw(ctx, camX, VIEW_H);
   for (const train of game.trains) train.draw(ctx, camX, VIEW_H, game.ticks);

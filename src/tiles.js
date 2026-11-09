@@ -123,3 +123,21 @@ export function drawRail(ctx, x, y, col, row) {
   px(ctx, '#a9a69d', x, y, TILE, 2); // räls
   px(ctx, '#d0cdc4', x, y, TILE, 1);
 }
+
+// Röse (stenhög) med en liten flagga. Flaggan hissas när älgen nått den.
+export function drawCheckpoint(ctx, x, y, active, ticks) {
+  const base = y + TILE; // marken
+  px(ctx, '#6a6862', x + 1, base - 5, 14, 5);
+  px(ctx, '#8a8780', x + 2, base - 5, 12, 2);
+  px(ctx, '#7a7771', x + 3, base - 9, 10, 4);
+  px(ctx, '#a9a69d', x + 4, base - 9, 6, 2);
+  px(ctx, '#8a8780', x + 5, base - 12, 6, 3);
+  px(ctx, COLORS.pole, x + 7, base - 26, 1, 15); // stång
+  if (active) {
+    const wave = Math.round(Math.sin(ticks / 10));
+    px(ctx, '#e0c050', x + 8, base - 26, 7, 5);
+    px(ctx, '#c9a23a', x + 8, base - 22 + wave, 5, 2);
+  } else {
+    px(ctx, '#6a6862', x + 8, base - 26, 5, 3);
+  }
+}

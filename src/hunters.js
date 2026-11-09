@@ -4,10 +4,10 @@ import { TILE } from './levelParser.js';
 import { lineOfSight } from './physics.js';
 
 const TOWER_H = 34; // tornets höjd i pixlar
-const AIM_TICKS = 45; // så länge jägaren siktar innan han skjuter (man hinner reagera)
-const COOLDOWN_TICKS = 110; // paus efter ett skott
-const BULLET_SPEED = 170; // pixlar per sekund
-const BULLET_LIFE = 150; // ticks
+const AIM_TICKS = 55; // så länge jägaren siktar innan han skjuter (man hinner reagera)
+const COOLDOWN_TICKS = 130; // paus efter ett skott
+const BULLET_SPEED = 140; // pixlar per sekund
+const BULLET_LIFE = 180; // ticks
 
 export class Hunter {
   constructor(col, row) {
@@ -39,6 +39,8 @@ export class Hunter {
     const ty = player.y + player.h / 2;
     const sx = this.cx;
     const sy = this.topY - 9;
+    // Rakt under tornet är man säker (jägaren kan inte skjuta rakt ner)
+    if (Math.abs(tx - sx) < 26) return false;
     const sight = level.sightAt(Math.floor(tx / TILE));
     if (Math.hypot(tx - sx, ty - sy) > sight) return false;
     return lineOfSight(level, sx, sy, tx, ty);

@@ -36,7 +36,8 @@ function drawHeart(ctx, x, y, color) {
 export function drawHud(ctx, game) {
   // Liv uppe till vänster, poäng uppe till höger.
   text(ctx, 'LIV', 6, 6);
-  for (let i = 0; i < START_LIVES; i++) {
+  const slots = Math.max(START_LIVES, game.lives);
+  for (let i = 0; i < slots; i++) {
     drawHeart(ctx, 30 + i * 10, 6, i < game.lives ? '#c0452b' : '#4a3a34');
   }
   text(ctx, 'POÄNG ' + String(game.score).padStart(6, '0'), VIEW_W - 6, 6, { align: 'right' });
@@ -73,7 +74,8 @@ export function drawTitle(ctx, game) {
   text(ctx, 'Mellanslag eller ↑   hoppa', 40, 88);
   text(ctx, 'Hoppa på björnar, vargar och hundar.', 40, 104);
   text(ctx, 'Akta dig för jägare och trafik!', 40, 116);
-  text(ctx, 'Ta dig till flaggan. Du har tre liv.', 40, 128);
+  text(ctx, 'Rösen sparar var du börjar om.', 40, 128);
+  text(ctx, 'Ta dig till flaggan. Du har tre liv.', 40, 140);
 
   if (blink(game)) {
     text(ctx, 'Tryck mellanslag eller Enter', VIEW_W / 2, 170, { align: 'center', color: '#e0c050' });

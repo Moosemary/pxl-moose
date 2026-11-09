@@ -28,6 +28,13 @@ export const PALETTES = {
     stump: '#7a5a38', stumpTop: '#c9a77a', snag: '#8a7a66', snagDark: '#6a5c4c',
     grass: '#8a8a40', grassDark: '#6f7432',
   },
+  vattendrag: {
+    skyTop: '#8fb0b8', skyBot: '#d2dec8', hill: '#8fa890', cloud: '#e6ecd8',
+    crownFar: '#8aa07e', crownFarLight: '#9ab08e',
+    crown: '#7f9a5a', crownLight: '#a0b87a', trunk: '#5a4630',
+    spruceFar: '#7f9a86', spruceFarLight: '#8eaa94',
+    grass: '#5f8a4a', grassDark: '#4a7038',
+  },
   vägen: {
     skyTop: '#9fb3b8', skyBot: '#d8d4bc', hill: '#9aab8e', cloud: '#e8e6d4',
     spruceFar: '#7f9a86', spruceFarLight: '#8eaa94',
@@ -179,7 +186,7 @@ function farLayer(ctx, camX, level) {
     const pal = paletteFor(biome);
     const rnd = hash(i, 1);
     const x = Math.round(sx + rnd * S * 0.8);
-    if (biome === 'lövskog') {
+    if (biome === 'lövskog' || biome === 'vattendrag') {
       if (rnd < 0.15) return;
       const r = 6 + Math.floor(hash(i, 2) * 5);
       roundTree(ctx, x, base, 8, r, pal.spruceFar, pal.crownFar, pal.crownFarLight, false, pal);
@@ -222,6 +229,12 @@ function midLayer(ctx, camX, level) {
         autumn ? pal.crownAutumnLight : pal.crownLight,
         birch, pal,
       );
+    } else if (biome === 'vattendrag') {
+      // Sälg och vide längs vattnet: breda, låga, gråaktiga kronor
+      if (rnd < 0.1) return;
+      const trunkH = 18 + Math.floor(hash(i, 16) * 14);
+      const r = 14 + Math.floor(hash(i, 17) * 7);
+      roundTree(ctx, x, base, trunkH, r, pal.trunk, pal.crown, pal.crownLight, false, pal);
     } else if (biome === 'kalhygge') {
       // Nästan öppet: någon enstaka torraka
       if (hash(i, 18) < 0.78) return;
@@ -355,6 +368,15 @@ function decorSapling(ctx, x, y) {
   ctx.fillRect(x + 1, y - 6, 1, 2);
 }
 
+function decorReed(ctx, x, y) {
+  ctx.fillStyle = '#6f8a4a';
+  ctx.fillRect(x + 1, y - 9, 1, 9);
+  ctx.fillRect(x + 4, y - 7, 1, 7);
+  ctx.fillStyle = '#5a3f28';
+  ctx.fillRect(x, y - 11, 3, 4);
+  ctx.fillRect(x + 3, y - 9, 3, 3);
+}
+
 function decorTuft(ctx, x, y, pal) {
   ctx.fillStyle = pal.grassDark;
   ctx.fillRect(x, y - 2, 1, 2);
@@ -397,6 +419,10 @@ export function drawGroundDecor(ctx, level, camX, firstCol, lastCol, occupied) {
       if (k < 0.4) decorStump(ctx, x, y);
       else if (k < 0.65) decorSlash(ctx, x - 2, y);
       else if (k < 0.85) decorSapling(ctx, x, y);
+      else decorTuft(ctx, x, y, pal);
+    } else if (biome === 'vattendrag') {
+      if (k < 0.5) decorReed(ctx, x, y);
+      else if (k < 0.75) decorFlower(ctx, x, y, hash(col, 80));
       else decorTuft(ctx, x, y, pal);
     } else {
       decorTuft(ctx, x, y, pal);

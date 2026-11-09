@@ -1,7 +1,7 @@
 // Spelets tillstånd: startskärm → spel → (förlorat liv) → Moose over eller vinst.
 import { TILE } from './levelParser.js';
 import { Player } from './player.js';
-import { VIEW_W, START_LIVES } from './config.js';
+import { VIEW_W, START_LIVES, EXTRA_LIFE_EVERY, MAX_LIVES } from './config.js';
 import { FOOD } from './foodSprites.js';
 import { Enemy, ENEMY_TYPES } from './enemies.js';
 import { Hunter, PatrolHunter, updateBullets } from './hunters.js';
@@ -22,6 +22,7 @@ export class Game {
     this.state = 'title'; // 'title' | 'playing' | 'dying' | 'gameover' | 'won'
     this.lives = START_LIVES;
     this.score = 0;
+    this.nextLifeAt = EXTRA_LIFE_EVERY;
     this.timer = 0;
     this.ticks = 0;
     this.camera = { x: 0 };
@@ -50,6 +51,10 @@ export class Game {
     this.footHunters = this.enemies.filter((e) => e.ch === 'H').map((dog) => new PatrolHunter(dog, this.level));
     this.bullets = [];
     this.buildTraffic();
+    this.checkpoints = this.level.entities
+      .filter((e) => e.ch === 'F')
+      .map((e) => ({ col: e.col, row: e.row, active: false }));
+    this.checkpoint = null;
     this.popups = [];
   }
 
@@ -89,7 +94,7 @@ export class Game {
         p.vy = -(input.jump ? STOMP_BOUNCE_HELD : STOMP_BOUNCE);
         p.onGround = false;
         const pts = e.type.points;
-        this.score += pts;
+        this.addScore(pts);
         this.popups.push({ x: e.x + e.w / 2, y: e.y - 6, text: '+' + pts, life: 40 });
       } else if (e.ch === 'H') {
         // Hunden skadar inte, men skäller och förlamar älgen.
@@ -157,6 +162,35 @@ export class Game {
     p.onGround = false;
   }
 
+  // Rör älgen ett röse blir det nästa startplats efter ett fall.
+  touchCheckpoints() {
+    const p = this.player;
+    for (const c of this.checkpoints) {
+      if (c.active) continue;
+      const x = c.col * TILE;
+      const y = (c.row + 1) * TILE;
+      if (p.x < x + 14 && p.x + p.w > x + 2 && p.y < y && p.y + p.h > y - 26) {
+        c.active = true;
+        this.checkpoint = c;
+        this.popups.push({ x: x + TILE / 2, y: y - 34, text: 'Kontrollpunkt!', life: 80, rise: 0.15 });
+      }
+    }
+  }
+
+  /** Lägger till poäng och ger ett extraliv för var EXTRA_LIFE_EVERY:e poäng. */
+  addScore(pts) {
+    this.score += pts;
+    if (!EXTRA_LIFE_EVERY) return;
+    while (this.score >= this.nextLifeAt) {
+      this.nextLifeAt += EXTRA_LIFE_EVERY;
+      if (this.lives < MAX_LIVES) {
+        this.lives++;
+        const p = this.player;
+        this.popups.push({ x: p.x + p.w / 2, y: p.y - 18, text: 'EXTRALIV!', life: 90, rise: 0.2 });
+      }
+    }
+  }
+
   collectFood() {
     const p = this.player;
     for (const it of this.items) {
@@ -167,7 +201,7 @@ export class Game {
       if (hit) {
         it.taken = true;
         const pts = FOOD[it.ch].points;
-        this.score += pts;
+        this.addScore(pts);
         this.popups.push({ x: it.col * TILE + TILE / 2, y: it.row * TILE, text: '+' + pts, life: 40 });
       }
     }
@@ -186,13 +220,14 @@ export class Game {
   startRun(input) {
     this.lives = START_LIVES;
     this.score = 0;
+    this.nextLifeAt = EXTRA_LIFE_EVERY;
     this.resetItems();
     this.spawn(input);
     this.state = 'playing';
   }
 
   spawn(input) {
-    this.player.respawn();
+    this.player.respawn(this.checkpoint);
     for (const e of this.enemies) if (!e.dead) e.reset(); // levande fiender tillbaka till sina platser
     for (const h of this.hunters) h.reset();
     for (const h of this.footHunters) h.reset();
@@ -223,6 +258,7 @@ export class Game {
         p.update(dt, input);
         this.camera.x += (this.cameraTarget() - this.camera.x) * 0.15;
         this.collectFood();
+        this.touchCheckpoints();
         this.handleEnemies(dt, input);
         if (this.state === 'playing') this.handleHunters(dt);
         if (this.state === 'playing') this.handleTraffic(dt);
