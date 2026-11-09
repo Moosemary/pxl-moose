@@ -4,7 +4,7 @@ import { input } from './input.js';
 import { startLoop, STEP } from './loop.js';
 import { VIEW_W, VIEW_H } from './config.js';
 import { Game } from './game.js';
-import { COLORS, drawGround, drawStone, drawGoal, drawStartMarker } from './tiles.js';
+import { COLORS, drawGround, drawStone, drawGoal, drawStartMarker, drawWater } from './tiles.js';
 import { drawBullets } from './hunters.js';
 import { drawFood } from './foodSprites.js';
 import { drawPopups, drawHud, drawTitle, drawDying, drawGameOver, drawWon, drawDebug } from './ui.js';
@@ -53,6 +53,7 @@ function drawLevel(camX) {
       const y = row * TILE;
       if (ch === '#') drawGround(ctx, x, y, col, row, level.tileAt(col, row - 1) !== '#');
       else if (ch === 'S') drawStone(ctx, x, y, col, row);
+      else if (ch === '~') drawWater(ctx, x, y, col, row, false, game.ticks, 'base');
     }
   }
 
@@ -81,11 +82,23 @@ function drawLevel(camX) {
   if (game.state === 'title') drawStartMarker(ctx, level.start.col * TILE - camX, level.start.row * TILE);
 }
 
+function drawWaterOverlay(camX) {
+  const firstCol = Math.floor(camX / TILE);
+  const lastCol = Math.min(level.width - 1, Math.floor((camX + VIEW_W) / TILE));
+  for (let row = 0; row < level.height; row++) {
+    for (let col = firstCol; col <= lastCol; col++) {
+      if (!level.isWater(col, row)) continue;
+      drawWater(ctx, col * TILE - camX, row * TILE, col, row, !level.isWater(col, row - 1), game.ticks, 'overlay');
+    }
+  }
+}
+
 function render() {
   const camX = Math.round(game.camera.x);
   drawBackground();
   drawLevel(camX);
   if (game.state !== 'dying' || game.player.y < level.height * TILE) game.player.draw(ctx, camX);
+  drawWaterOverlay(camX);
   drawBullets(ctx, game.bullets, camX);
   drawPopups(ctx, game, camX);
 

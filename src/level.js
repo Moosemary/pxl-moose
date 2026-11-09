@@ -7,6 +7,8 @@
 //   (mellanslag) eller .   luft
 //   #   mark
 //   S   stor sten (man kan stå på den)
+//   ~   vatten (älgen kan simma: håll hoppknappen för att simma uppåt).
+//       Gör en sjö genom att fylla rutor med ~ och ha mark (#) under.
 //   P   startpunkt
 //   G   mål
 //
@@ -22,7 +24,7 @@
 //   J   jägare i jakttorn (står stilla, siktar och skjuter när älgen kommer nära)
 //
 // Kommer i senare steg (ignoreras än så länge):
-//   ~ vatten    = väg
+//   = väg
 //   C bil       U buss      R tåg
 //
 // Ett HÅL är bara en lucka i marken.
@@ -40,8 +42,9 @@ export const LEVEL_ROWS = [
   '        b                           S    SSS              bb  kk                          ',
   '        S     kkk     kk     b     SS   SSSS          gg      SS                          ',
   ' P  k  SS  W       gggSS J        SSS  SSSSS   k kBk  SS      SSS W g g kJb   H     G     ',
-  '##############   ###########   ##########################    #############################',
-  '##############   ###########   ##########################    #############################',
+  '##############   ###########   #########################~~~~~#############################',
+  '##############   ###########   #########################~~~~~#############################',
+  '##############   ###########   ###########################################################',
 ];
 
 // Miljöer anges som kolumnintervall (från och med – till och med).

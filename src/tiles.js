@@ -71,3 +71,30 @@ export function drawStartMarker(ctx, x, y) {
   px(ctx, COLORS.pole, x + 7, y + 4, 2, 12);
   px(ctx, '#e0c050', x + 3, y + 2, 10, 4);
 }
+
+// Vatten: 'base' ritas bakom älgen, 'overlay' ritas framför (halvt genomskinligt)
+// så att en simmande älg syns genom vattnet.
+export function drawWater(ctx, x, y, col, row, isSurface, ticks, mode) {
+  if (mode === 'base') {
+    px(ctx, '#2f5f7f', x, y, TILE, TILE);
+    for (let i = 0; i < 3; i++) {
+      const dx = Math.floor(hash(col, row, i) * TILE);
+      const dy = Math.floor(hash(col, row, i + 20) * TILE);
+      px(ctx, '#3d7194', x + dx, y + dy, 3, 1);
+    }
+    return;
+  }
+  ctx.fillStyle = 'rgba(110, 170, 205, 0.38)';
+  ctx.fillRect(x, y, TILE, TILE);
+  if (isSurface) {
+    for (let dx = 0; dx < TILE; dx++) {
+      const wave = Math.round(Math.sin((col * TILE + dx) / 3 + ticks / 12));
+      px(ctx, '#9fd0e6', x + dx, y + 1 + wave, 1, 1);
+      px(ctx, '#d6eef7', x + dx, y + 1 + wave - 1, hash(col, dx, Math.floor(ticks / 20)) < 0.15 ? 1 : 0, 1);
+    }
+  }
+  // Glitter
+  const gx = Math.floor(hash(col, row, Math.floor(ticks / 30)) * TILE);
+  const gy = Math.floor(hash(row, col, Math.floor(ticks / 30)) * TILE);
+  px(ctx, '#d6eef7', x + gx, y + gy, 1, 1);
+}

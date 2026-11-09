@@ -4,6 +4,7 @@ export const TILE = 16;
 
 // Tecken som är fasta (man kan stå på dem).
 const SOLID = new Set(['#', 'S']);
+const WATER = '~';
 
 export function parseLevel(rows, biomes) {
   const height = rows.length;
@@ -24,7 +25,7 @@ export function parseLevel(rows, biomes) {
       } else if (ch === 'G') {
         goal = { col, row };
         ch = ' ';
-      } else if (ch !== ' ' && !SOLID.has(ch)) {
+      } else if (ch !== ' ' && ch !== WATER && !SOLID.has(ch)) {
         entities.push({ ch, col, row }); // används i senare steg
         ch = ' ';
       }
@@ -45,6 +46,15 @@ export function parseLevel(rows, biomes) {
       if (col < 0 || col >= width || row < 0) return col < 0 || col >= width;
       if (row >= height) return false;
       return SOLID.has(grid[row][col]);
+    },
+    isWater(col, row) {
+      return col >= 0 && col < width && row >= 0 && row < height && grid[row][col] === WATER;
+    },
+    // Y-koordinaten (pixlar) för vattenytan i den här kolumnen, sett från en vattenruta.
+    waterTopY(col, row) {
+      let r = row;
+      while (r > 0 && grid[r - 1][col] === WATER) r--;
+      return r * TILE;
     },
     tileAt(col, row) {
       if (col < 0 || col >= width || row < 0 || row >= height) return ' ';
