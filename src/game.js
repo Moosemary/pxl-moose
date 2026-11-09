@@ -4,11 +4,12 @@ import { Player } from './player.js';
 import { VIEW_W, START_LIVES } from './config.js';
 import { FOOD } from './foodSprites.js';
 import { Enemy, ENEMY_TYPES } from './enemies.js';
-import { Hunter, updateBullets } from './hunters.js';
+import { Hunter, PatrolHunter, updateBullets } from './hunters.js';
 
 const DEATH_PAUSE = 60; // ticks (1 s) efter att ett liv gått förlorat
 const END_LOCKOUT = 45; // så att man inte råkar hoppa förbi slutskärmen
 const INVULN_TICKS = 100; // oskadlig en stund efter en träff
+const PARALYZE_TICKS = 130; // så länge älgen är förlamad av hundens skall
 const STOMP_BOUNCE = 230; // studs när man hoppar på en fiende
 const STOMP_BOUNCE_HELD = 330; // högre studs om man håller hoppknappen
 
@@ -26,6 +27,7 @@ export class Game {
     this.items = [];
     this.enemies = [];
     this.hunters = [];
+    this.footHunters = []; // jägare till fots (följer sin hund)
     this.bullets = [];
     this.deathText = '';
     this.popups = []; // flytande "+10" när man tar mat
@@ -42,6 +44,7 @@ export class Game {
       .filter((e) => ENEMY_TYPES[e.ch])
       .map((e) => new Enemy(e.ch, e.col, e.row));
     this.hunters = this.level.entities.filter((e) => e.ch === 'J').map((e) => new Hunter(e.col, e.row));
+    this.footHunters = this.enemies.filter((e) => e.ch === 'H').map((dog) => new PatrolHunter(dog, this.level));
     this.bullets = [];
     this.popups = [];
   }
@@ -68,15 +71,29 @@ export class Game {
         const pts = e.type.points;
         this.score += pts;
         this.popups.push({ x: e.x + e.w / 2, y: e.y - 6, text: '+' + pts, life: 40 });
+      } else if (e.ch === 'H') {
+        // Hunden skadar inte, men skäller och förlamar älgen.
+        if (p.paralyzed === 0 && p.paraImmune === 0) this.paralyze(e);
       } else if (p.invuln === 0) {
         this.hurtPlayer(e.x + e.w / 2, e.ch === 'B' ? 'Björnen tog dig!' : 'Vargen tog dig!');
       }
     }
   }
 
+  paralyze(dog) {
+    const p = this.player;
+    p.paralyzed = PARALYZE_TICKS;
+    p.vx = 0;
+    dog.bark = PARALYZE_TICKS;
+    this.popups.push({ x: dog.x + dog.w / 2, y: dog.y - 14, text: 'VOFF!', life: 70, rise: 0.05 });
+  }
+
   // Jägare siktar och skjuter; skotten flyger rakt fram tills de träffar något.
   handleHunters(dt) {
     for (const h of this.hunters) h.update(this.player, this.level, this.bullets);
+    for (const h of this.footHunters) {
+      h.update(this.player, this.level, this.bullets, this.camera.x, VIEW_W, dt);
+    }
     this.bullets = updateBullets(this.bullets, dt, this.level, this.player, (b) =>
       this.hurtPlayer(b.x - Math.sign(b.vx || 1) * 8, 'Jägaren sköt dig!'),
     );
@@ -87,6 +104,8 @@ export class Game {
     const p = this.player;
     this.lives--;
     this.deathText = text;
+    p.paralyzed = 0; // en träff gör slut på förlamningen
+    p.paraImmune = 90;
     if (this.lives <= 0) {
       this.state = 'dying';
       this.timer = DEATH_PAUSE;
@@ -136,6 +155,7 @@ export class Game {
     this.player.respawn();
     for (const e of this.enemies) if (!e.dead) e.reset(); // levande fiender tillbaka till sina platser
     for (const h of this.hunters) h.reset();
+    for (const h of this.footHunters) h.reset();
     this.bullets = [];
     this.player.prevJump = input.jump; // en hållen hoppknapp ska inte hoppa direkt
     this.snapCamera();
@@ -146,7 +166,7 @@ export class Game {
     const start = input.consumeStart();
     if (this.timer > 0) this.timer--;
     for (const pop of this.popups) {
-      pop.y -= 0.5;
+      pop.y -= pop.rise ?? 0.5;
       pop.life--;
     }
     this.popups = this.popups.filter((pop) => pop.life > 0);

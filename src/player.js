@@ -14,6 +14,7 @@ const ACCEL = 650;
 const FRICTION = 800;
 const AIR_CONTROL = 0.75;
 const COYOTE_TICKS = 6; // man kan hoppa en kort stund efter att ha lämnat en kant
+const PARA_IMMUNE_TICKS = 90; // 1,5 s utan ny förlamning efter att man blivit fri
 const BUFFER_TICKS = 6; // ett hopp strax före landning räknas ändå
 
 export class Player {
@@ -37,9 +38,20 @@ export class Player {
     this.buffer = 0;
     this.prevJump = false;
     this.invuln = 0; // ticks kvar av oskadlighet efter en träff
+    this.paralyzed = 0; // ticks kvar som älgen är förlamad (hundens skall)
+    this.paraImmune = 0; // kort skydd mot ny förlamning så att man hinner fly
   }
 
-  update(dt, input) {
+  update(dt, realInput) {
+    // Förlamad: älgen kan inte röra sig eller hoppa, men tyngdkraften verkar.
+    let input = realInput;
+    if (this.paralyzed > 0) {
+      input = { left: false, right: false, jump: false };
+      this.vx = 0;
+      if (--this.paralyzed === 0) this.paraImmune = PARA_IMMUNE_TICKS;
+    } else if (this.paraImmune > 0) {
+      this.paraImmune--;
+    }
     // --- Vågrät rörelse ---
     const dirInput = (input.right ? 1 : 0) - (input.left ? 1 : 0);
     const control = this.onGround ? 1 : AIR_CONTROL;
@@ -97,6 +109,15 @@ export class Player {
 
   draw(ctx, camX) {
     if (this.invuln > 0 && Math.floor(this.invuln / 4) % 2 === 0) return; // blinkar
+    if (this.paralyzed > 0) {
+      // Kryssande stjärnor ovanför huvudet
+      const cx = this.x + this.w / 2 - camX;
+      for (let i = 0; i < 3; i++) {
+        const a = this.paralyzed * 0.25 + i * 2.1;
+        ctx.fillStyle = '#ffe070';
+        ctx.fillRect(Math.round(cx + Math.cos(a) * 9), Math.round(this.y - 12 + Math.sin(a) * 3), 2, 2);
+      }
+    }
     drawMoose(
       ctx,
       this.x + this.w / 2 - camX,

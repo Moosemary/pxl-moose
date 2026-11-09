@@ -10,6 +10,7 @@ const SQUISH_TICKS = 24;
 export const ENEMY_TYPES = {
   B: { name: 'björn', w: 24, h: 20, speed: 22, points: 150 },
   W: { name: 'varg', w: 20, h: 14, speed: 48, points: 100 },
+  H: { name: 'jakthund', w: 18, h: 12, speed: 42, points: 100 }, // förlamar älgen, dödar inte
 };
 
 export class Enemy {
@@ -35,6 +36,7 @@ export class Enemy {
     this.onGround = false;
     this.active = false; // vaknar när kameran närmar sig
     this.phase = 0;
+    this.bark = 0; // ticks kvar som hunden skäller (står stilla)
   }
 
   get alive() {
@@ -58,6 +60,11 @@ export class Enemy {
     if (!this.active) {
       if (this.x < cameraX + viewW + 32) this.active = true;
       else return;
+    }
+
+    if (this.bark > 0) {
+      this.bark--; // hunden skäller och står stilla
+      return;
     }
 
     this.vy = Math.min(this.vy + GRAVITY * dt, MAX_FALL);
@@ -90,6 +97,7 @@ export class Enemy {
       ctx.scale(this.dir, 1);
     }
     if (this.ch === 'B') drawBear(ctx, this.phase);
+    else if (this.ch === 'H') drawDog(ctx, this.phase, this.bark > 0);
     else drawWolf(ctx, this.phase);
     ctx.restore();
   }
@@ -137,4 +145,27 @@ function drawWolf(ctx, phase) {
   r(ctx, C.eye, 9, -12, 1, 1);
   r(ctx, C.body, -13, -13, 4, 3); // svans upp
   r(ctx, C.dark, -14, -15, 2, 3);
+}
+
+function drawDog(ctx, phase, barking) {
+  const C = { body: '#b07a45', dark: '#3a2a20', light: '#e8dcc0', leg: '#8a5e34', nose: '#14100c' };
+  [-7, -4, 3, 6].forEach((x, i) => {
+    const s = barking ? 0 : Math.round(Math.sin(phase + (i % 2 ? Math.PI : 0)) * 2);
+    r(ctx, C.leg, x + s, -4, 2, 4);
+  });
+  r(ctx, C.body, -8, -9, 14, 5); // kropp
+  r(ctx, C.dark, -5, -9, 9, 2); // sadel
+  r(ctx, C.light, 3, -5, 3, 1); // vitt bröst
+  const up = barking ? 3 : 0; // huvudet höjs när hunden skäller
+  r(ctx, C.body, 5, -11 - up, 6, 5);
+  r(ctx, C.light, 10, -9 - up, 3, 3);
+  r(ctx, C.nose, 12, -9 - up, 1, 1);
+  r(ctx, C.dark, 5, -11 - up, 2, 4); // hängande öra
+  r(ctx, '#14100c', 9, -10 - up, 1, 1); // öga
+  if (barking) {
+    r(ctx, '#c0452b', 11, -7 - up, 2, 1); // öppen mun
+    r(ctx, C.body, -10, -12 + (Math.floor(phase * 4 + Date.now() / 60) % 2), 2, 4);
+  } else {
+    r(ctx, C.body, -10, -11, 2, 4); // svans
+  }
 }

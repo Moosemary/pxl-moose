@@ -16,11 +16,13 @@
 //
 //   B   björn (går fram och tillbaka, 150 poäng om man hoppar på den)
 //   W   varg  (snabbare, 100 poäng)
+//   H   jakthund med jägare efter sig. Hunden går först; går älgen in i den skäller
+//       den och älgen blir förlamad en stund, då kan jägaren skjuta. Hoppa på hunden!
+//       (jägaren placeras automatiskt 3 rutor till höger om hunden)
 //   J   jägare i jakttorn (står stilla, siktar och skjuter när älgen kommer nära)
 //
 // Kommer i senare steg (ignoreras än så länge):
 //   ~ vatten    = väg
-//   H jägare med hund
 //   C bil       U buss      R tåg
 //
 // Ett HÅL är bara en lucka i marken.
@@ -37,7 +39,7 @@ export const LEVEL_ROWS = [
   '                                    g     SS                                              ',
   '        b                           S    SSS              bb  kk                          ',
   '        S     kkk     kk     b     SS   SSSS          gg      SS                          ',
-  ' P  k  SS  W       gggSS J        SSS  SSSSS   k kBk  SS      SSS W g g kJb     B   G     ',
+  ' P  k  SS  W       gggSS J        SSS  SSSSS   k kBk  SS      SSS W g g kJb   H     G     ',
   '##############   ###########   ##########################    #############################',
   '##############   ###########   ##########################    #############################',
 ];

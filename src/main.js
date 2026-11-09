@@ -61,6 +61,11 @@ function drawLevel(camX) {
     h.draw(ctx, camX, game.ticks);
   }
 
+  for (const h of game.footHunters) {
+    if (h.x + 20 < camX || h.x - 20 > camX + VIEW_W) continue;
+    h.draw(ctx, camX, game.ticks);
+  }
+
   for (const e of game.enemies) {
     if (e.removed || e.x + e.w < camX || e.x > camX + VIEW_W) continue;
     e.draw(ctx, camX);
