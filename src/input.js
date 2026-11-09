@@ -3,12 +3,17 @@
 const LEFT = ['ArrowLeft', 'KeyA'];
 const RIGHT = ['ArrowRight', 'KeyD'];
 const JUMP = ['Space', 'ArrowUp'];
-const PREVENT = new Set([...LEFT, ...RIGHT, ...JUMP, 'ArrowDown']);
+const START = ['Space', 'Enter'];
+const PREVENT = new Set([...LEFT, ...RIGHT, ...JUMP, ...START, 'ArrowDown', 'F3']);
 
 const down = new Set();
+let startFlag = false;
+let debugOn = false;
 
 window.addEventListener('keydown', (e) => {
   if (PREVENT.has(e.code)) e.preventDefault();
+  if (!e.repeat && START.includes(e.code)) startFlag = true;
+  if (!e.repeat && e.code === 'F3') debugOn = !debugOn;
   down.add(e.code);
 });
 window.addEventListener('keyup', (e) => down.delete(e.code));
@@ -25,5 +30,14 @@ export const input = {
   },
   get jump() {
     return any(JUMP);
+  },
+  get debug() {
+    return debugOn;
+  },
+  // True en gång per tryck på mellanslag eller Enter (för menyer).
+  consumeStart() {
+    const was = startFlag;
+    startFlag = false;
+    return was;
   },
 };

@@ -2,12 +2,10 @@ import { LEVEL_ROWS, BIOMES } from './level.js';
 import { parseLevel, TILE } from './levelParser.js';
 import { input } from './input.js';
 import { startLoop, STEP } from './loop.js';
-import { Player } from './player.js';
+import { VIEW_W, VIEW_H } from './config.js';
+import { Game } from './game.js';
 import { COLORS, drawGround, drawStone, drawGoal, drawStartMarker } from './tiles.js';
-
-// Spelets egen låga upplösning – skalas upp i heltal så pixlarna blir tydliga.
-const VIEW_W = 320;
-const VIEW_H = 208; // 13 rutor höga
+import { drawHud, drawTitle, drawDying, drawGameOver, drawWon, drawDebug } from './ui.js';
 
 const screen = document.getElementById('game');
 const sctx = screen.getContext('2d');
@@ -18,35 +16,16 @@ buffer.height = VIEW_H;
 const ctx = buffer.getContext('2d');
 
 const level = parseLevel(LEVEL_ROWS, BIOMES);
-const levelPxW = level.width * TILE;
+const game = new Game(level);
 
-const player = new Player(level);
-
-// Kameran följer älgen och lämnar lite mer utrymme framför den än bakom.
-const camera = { x: 0 };
-const CAMERA_LEAD = VIEW_W * 0.4; // älgen hålls ca 40 % in från vänstra kanten
-function cameraTarget() {
-  const t = player.x + player.w / 2 - CAMERA_LEAD;
-  return Math.max(0, Math.min(t, levelPxW - VIEW_W));
-}
-camera.x = cameraTarget();
-
-// Mätare för att kunna kontrollera att takten är lika på alla skärmar.
-let ticks = 0;
+// Mätare för att kunna kontrollera att takten är lika på alla skärmar (tryck F3).
 let tickRate = 0;
 let rateTicks = 0;
 let rateStart = performance.now();
 
 function update(dt) {
-  ticks++;
   rateTicks++;
-  player.update(dt, input);
-
-  // Tillfälligt: ramlar man i ett hål börjar man om vid start.
-  // (I steg 5 blir det i stället ett förlorat liv.)
-  if (player.fellOut) player.respawn();
-
-  camera.x += (cameraTarget() - camera.x) * 0.15;
+  game.update(dt, input);
 }
 
 function resize() {
@@ -61,8 +40,7 @@ function drawBackground() {
   ctx.fillRect(0, VIEW_H * 0.55, VIEW_W, VIEW_H);
 }
 
-function drawLevel() {
-  const camX = Math.round(camera.x);
+function drawLevel(camX) {
   const firstCol = Math.floor(camX / TILE);
   const lastCol = Math.min(level.width - 1, Math.floor((camX + VIEW_W) / TILE));
 
@@ -77,35 +55,44 @@ function drawLevel() {
   }
 
   if (level.goal) drawGoal(ctx, level.goal.col * TILE - camX, level.goal.row * TILE);
-  drawStartMarker(ctx, level.start.col * TILE - camX, level.start.row * TILE);
-}
-
-function drawDebug() {
-  const now = performance.now();
-  if (now - rateStart >= 1000) {
-    tickRate = Math.round((rateTicks * 1000) / (now - rateStart));
-    rateTicks = 0;
-    rateStart = now;
-  }
-  const col = Math.floor((player.x + player.w / 2) / TILE);
-  ctx.font = '8px monospace';
-  ctx.textBaseline = 'top';
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#00000088';
-  ctx.fillRect(2, 2, 150, 34);
-  ctx.fillStyle = COLORS.text;
-  ctx.fillText('pxl moose – steg 4 (test)', 5, 5);
-  ctx.fillText(`x ${Math.round(player.x)}  miljö: ${level.biomeAt(col)}`, 5, 15);
-  ctx.fillText(`uppdateringar/s: ${tickRate} (ska vara ${Math.round(1 / STEP)})`, 5, 25);
-  ctx.textAlign = 'center';
-  ctx.fillText('← → / A D: gå    mellanslag / ↑: hoppa', VIEW_W / 2, VIEW_H - 12);
+  if (game.state === 'title') drawStartMarker(ctx, level.start.col * TILE - camX, level.start.row * TILE);
 }
 
 function render() {
+  const camX = Math.round(game.camera.x);
   drawBackground();
-  drawLevel();
-  player.draw(ctx, Math.round(camera.x));
-  drawDebug();
+  drawLevel(camX);
+  if (game.state !== 'dying' || game.player.y < level.height * TILE) game.player.draw(ctx, camX);
+
+  switch (game.state) {
+    case 'title':
+      drawTitle(ctx, game);
+      break;
+    case 'dying':
+      drawHud(ctx, game);
+      drawDying(ctx);
+      break;
+    case 'gameover':
+      drawHud(ctx, game);
+      drawGameOver(ctx, game);
+      break;
+    case 'won':
+      drawHud(ctx, game);
+      drawWon(ctx, game);
+      break;
+    default:
+      drawHud(ctx, game);
+  }
+
+  if (input.debug) {
+    const now = performance.now();
+    if (now - rateStart >= 1000) {
+      tickRate = Math.round((rateTicks * 1000) / (now - rateStart));
+      rateTicks = 0;
+      rateStart = now;
+    }
+    drawDebug(ctx, game, tickRate, Math.round(1 / STEP));
+  }
 
   // Skala upp bufferten med heltalsfaktor, centrerad.
   const scale = Math.max(1, Math.floor(Math.min(screen.width / VIEW_W, screen.height / VIEW_H)));
