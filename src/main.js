@@ -5,6 +5,7 @@ import { startLoop, STEP } from './loop.js';
 import { VIEW_W, VIEW_H } from './config.js';
 import { Game } from './game.js';
 import { COLORS, drawGround, drawStone, drawGoal, drawStartMarker } from './tiles.js';
+import { drawBullets } from './hunters.js';
 import { drawFood } from './foodSprites.js';
 import { drawPopups, drawHud, drawTitle, drawDying, drawGameOver, drawWon, drawDebug } from './ui.js';
 
@@ -55,6 +56,11 @@ function drawLevel(camX) {
     }
   }
 
+  for (const h of game.hunters) {
+    if (h.cx + 20 < camX || h.cx - 20 > camX + VIEW_W) continue;
+    h.draw(ctx, camX, game.ticks);
+  }
+
   for (const e of game.enemies) {
     if (e.removed || e.x + e.w < camX || e.x > camX + VIEW_W) continue;
     e.draw(ctx, camX);
@@ -75,6 +81,7 @@ function render() {
   drawBackground();
   drawLevel(camX);
   if (game.state !== 'dying' || game.player.y < level.height * TILE) game.player.draw(ctx, camX);
+  drawBullets(ctx, game.bullets, camX);
   drawPopups(ctx, game, camX);
 
   switch (game.state) {
@@ -116,6 +123,9 @@ function render() {
   sctx.imageSmoothingEnabled = false;
   sctx.drawImage(buffer, Math.floor((screen.width - w) / 2), Math.floor((screen.height - h) / 2), w, h);
 }
+
+// Bara i dev-läge (npm run dev): gör det lätt att testa från webbläsarens konsol.
+if (import.meta.env.DEV) window.__game = game;
 
 window.addEventListener('resize', resize);
 resize();

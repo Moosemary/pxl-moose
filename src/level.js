@@ -16,10 +16,11 @@
 //
 //   B   björn (går fram och tillbaka, 150 poäng om man hoppar på den)
 //   W   varg  (snabbare, 100 poäng)
+//   J   jägare i jakttorn (står stilla, siktar och skjuter när älgen kommer nära)
 //
 // Kommer i senare steg (ignoreras än så länge):
 //   ~ vatten    = väg
-//   H jägare med hund            J jägare i torn
+//   H jägare med hund
 //   C bil       U buss      R tåg
 //
 // Ett HÅL är bara en lucka i marken.
@@ -36,14 +37,16 @@ export const LEVEL_ROWS = [
   '                                    g     SS                                              ',
   '        b                           S    SSS              bb  kk                          ',
   '        S     kkk     kk     b     SS   SSSS          gg      SS                          ',
-  ' P  k  SS  W       gggSS          SSS  SSSSS   k kBk  SS      SSS W g g k b     B   G     ',
+  ' P  k  SS  W       gggSS J        SSS  SSSSS   k kBk  SS      SSS W g g kJb     B   G     ',
   '##############   ###########   ##########################    #############################',
   '##############   ###########   ##########################    #############################',
 ];
 
 // Miljöer anges som kolumnintervall (från och med – till och med).
+// sight = hur långt (i pixlar, 16 per ruta) en jägare ser älgen i den miljön.
+// På kalhygget finns inga träd som skymmer, så där syns älgen från långt håll.
 export const BIOMES = [
-  { name: 'granskog', from: 0, to: 29 },
-  { name: 'lövskog', from: 30, to: 59 },
-  { name: 'kalhygge', from: 60, to: 999 },
+  { name: 'granskog', from: 0, to: 29, sight: 110 },
+  { name: 'lövskog', from: 30, to: 59, sight: 130 },
+  { name: 'kalhygge', from: 60, to: 999, sight: 240 },
 ];

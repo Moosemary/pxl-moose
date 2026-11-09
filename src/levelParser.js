@@ -53,5 +53,9 @@ export function parseLevel(rows, biomes) {
     biomeAt(col) {
       return biomes.find((b) => col >= b.from && col <= b.to)?.name ?? '';
     },
+    // Hur långt en jägare ser älgen när den står i den här kolumnen (pixlar).
+    sightAt(col) {
+      return biomes.find((b) => col >= b.from && col <= b.to)?.sight ?? 100;
+    },
   };
 }

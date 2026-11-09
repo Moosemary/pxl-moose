@@ -56,3 +56,16 @@ export function moveBodyY(b, level, dy) {
     }
   }
 }
+
+/** Fri sikt mellan två punkter (inga fasta rutor i vägen)? */
+export function lineOfSight(level, x0, y0, x1, y1) {
+  const dist = Math.hypot(x1 - x0, y1 - y0);
+  const steps = Math.ceil(dist / 3);
+  for (let i = 1; i < steps; i++) {
+    const t = i / steps;
+    const x = x0 + (x1 - x0) * t;
+    const y = y0 + (y1 - y0) * t;
+    if (level.isSolid(Math.floor(x / TILE), Math.floor(y / TILE))) return false;
+  }
+  return true;
+}

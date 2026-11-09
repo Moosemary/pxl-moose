@@ -72,7 +72,8 @@ export function drawTitle(ctx, game) {
   text(ctx, '← → eller A D   gå', 40, 76);
   text(ctx, 'Mellanslag eller ↑   hoppa', 40, 88);
   text(ctx, 'Hoppa på björnar och vargar.', 40, 104);
-  text(ctx, 'Ta dig till flaggan. Du har tre liv.', 40, 116);
+  text(ctx, 'Akta dig för jägarna i tornen!', 40, 116);
+  text(ctx, 'Ta dig till flaggan. Du har tre liv.', 40, 128);
 
   if (blink(game)) {
     text(ctx, 'Tryck mellanslag eller Enter', VIEW_W / 2, 170, { align: 'center', color: '#e0c050' });

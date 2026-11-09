@@ -4,6 +4,7 @@ import { Player } from './player.js';
 import { VIEW_W, START_LIVES } from './config.js';
 import { FOOD } from './foodSprites.js';
 import { Enemy, ENEMY_TYPES } from './enemies.js';
+import { Hunter, updateBullets } from './hunters.js';
 
 const DEATH_PAUSE = 60; // ticks (1 s) efter att ett liv gått förlorat
 const END_LOCKOUT = 45; // så att man inte råkar hoppa förbi slutskärmen
@@ -24,6 +25,8 @@ export class Game {
     this.camera = { x: 0 };
     this.items = [];
     this.enemies = [];
+    this.hunters = [];
+    this.bullets = [];
     this.deathText = '';
     this.popups = []; // flytande "+10" när man tar mat
     this.resetItems();
@@ -38,6 +41,8 @@ export class Game {
     this.enemies = this.level.entities
       .filter((e) => ENEMY_TYPES[e.ch])
       .map((e) => new Enemy(e.ch, e.col, e.row));
+    this.hunters = this.level.entities.filter((e) => e.ch === 'J').map((e) => new Hunter(e.col, e.row));
+    this.bullets = [];
     this.popups = [];
   }
 
@@ -64,15 +69,24 @@ export class Game {
         this.score += pts;
         this.popups.push({ x: e.x + e.w / 2, y: e.y - 6, text: '+' + pts, life: 40 });
       } else if (p.invuln === 0) {
-        this.hurtPlayer(e);
+        this.hurtPlayer(e.x + e.w / 2, e.ch === 'B' ? 'Björnen tog dig!' : 'Vargen tog dig!');
       }
     }
   }
 
-  hurtPlayer(e) {
+  // Jägare siktar och skjuter; skotten flyger rakt fram tills de träffar något.
+  handleHunters(dt) {
+    for (const h of this.hunters) h.update(this.player, this.level, this.bullets);
+    this.bullets = updateBullets(this.bullets, dt, this.level, this.player, (b) =>
+      this.hurtPlayer(b.x - Math.sign(b.vx || 1) * 8, 'Jägaren sköt dig!'),
+    );
+  }
+
+  // sourceX = var skadan kom ifrån (älgen slungas bort därifrån)
+  hurtPlayer(sourceX, text) {
     const p = this.player;
     this.lives--;
-    this.deathText = e.ch === 'B' ? 'Björnen tog dig!' : 'Vargen tog dig!';
+    this.deathText = text;
     if (this.lives <= 0) {
       this.state = 'dying';
       this.timer = DEATH_PAUSE;
@@ -80,7 +94,7 @@ export class Game {
     }
     p.invuln = INVULN_TICKS;
     p.vy = -200;
-    p.vx = Math.sign(p.x + p.w / 2 - (e.x + e.w / 2) || 1) * 120;
+    p.vx = Math.sign(p.x + p.w / 2 - sourceX || 1) * 120;
     p.onGround = false;
   }
 
@@ -121,6 +135,8 @@ export class Game {
   spawn(input) {
     this.player.respawn();
     for (const e of this.enemies) if (!e.dead) e.reset(); // levande fiender tillbaka till sina platser
+    for (const h of this.hunters) h.reset();
+    this.bullets = [];
     this.player.prevJump = input.jump; // en hållen hoppknapp ska inte hoppa direkt
     this.snapCamera();
   }
@@ -146,6 +162,7 @@ export class Game {
         this.camera.x += (this.cameraTarget() - this.camera.x) * 0.15;
         this.collectFood();
         this.handleEnemies(dt, input);
+        if (this.state === 'playing') this.handleHunters(dt);
 
         const goal = this.level.goal;
         if (this.state !== 'playing') break; // en fiende tog sista livet
