@@ -5,6 +5,7 @@ import { VIEW_W, START_LIVES } from './config.js';
 import { FOOD } from './foodSprites.js';
 import { Enemy, ENEMY_TYPES } from './enemies.js';
 import { Hunter, PatrolHunter, updateBullets } from './hunters.js';
+import { Road, Train, VEHICLE_TYPES, findLane } from './traffic.js';
 
 const DEATH_PAUSE = 60; // ticks (1 s) efter att ett liv gått förlorat
 const END_LOCKOUT = 45; // så att man inte råkar hoppa förbi slutskärmen
@@ -28,6 +29,8 @@ export class Game {
     this.enemies = [];
     this.hunters = [];
     this.footHunters = []; // jägare till fots (följer sin hund)
+    this.roads = [];
+    this.trains = [];
     this.bullets = [];
     this.deathText = '';
     this.popups = []; // flytande "+10" när man tar mat
@@ -46,7 +49,24 @@ export class Game {
     this.hunters = this.level.entities.filter((e) => e.ch === 'J').map((e) => new Hunter(e.col, e.row));
     this.footHunters = this.enemies.filter((e) => e.ch === 'H').map((dog) => new PatrolHunter(dog, this.level));
     this.bullets = [];
+    this.buildTraffic();
     this.popups = [];
+  }
+
+  // Bilar/bussar (C, U) grupperas per väg; tåg (R) får sin räls.
+  buildTraffic() {
+    const lvl = this.level;
+    const byLane = new Map();
+    for (const e of lvl.entities.filter((e) => VEHICLE_TYPES[e.ch])) {
+      const lane = findLane(lvl, e.col, e.row, '=');
+      const key = lane.left + ':' + lane.right;
+      if (!byLane.has(key)) byLane.set(key, { lane, defs: [] });
+      byLane.get(key).defs.push(e);
+    }
+    this.roads = [...byLane.values()].map(({ lane, defs }) => new Road(lane, defs));
+    this.trains = lvl.entities
+      .filter((e) => e.ch === 'R')
+      .map((e) => new Train(findLane(lvl, e.col, e.row, '-'), e.col));
   }
 
   // Möter älgen en fiende: hoppa på den (uppifrån) eller bli skadad.
@@ -97,6 +117,26 @@ export class Game {
     this.bullets = updateBullets(this.bullets, dt, this.level, this.player, (b) =>
       this.hurtPlayer(b.x - Math.sign(b.vx || 1) * 8, 'Jägaren sköt dig!'),
     );
+  }
+
+  // Trafik: bilar, bussar och tåg skadar alltid vid kontakt.
+  handleTraffic(dt) {
+    const p = this.player;
+    for (const road of this.roads) {
+      road.update(dt, this.camera.x, VIEW_W);
+      const v = road.hit(p);
+      if (v && p.invuln === 0) {
+        this.hurtPlayer(v.x + v.w / 2, v.ch === 'C' ? 'Du blev påkörd av en bil!' : 'Du blev påkörd av en buss!');
+        if (this.state !== 'playing') return;
+      }
+    }
+    for (const train of this.trains) {
+      train.update(dt, this.camera.x, VIEW_W);
+      if (train.hit(p) && p.invuln === 0) {
+        this.hurtPlayer(train.x + 90, 'Tåget körde på dig!');
+        if (this.state !== 'playing') return;
+      }
+    }
   }
 
   // sourceX = var skadan kom ifrån (älgen slungas bort därifrån)
@@ -156,6 +196,8 @@ export class Game {
     for (const e of this.enemies) if (!e.dead) e.reset(); // levande fiender tillbaka till sina platser
     for (const h of this.hunters) h.reset();
     for (const h of this.footHunters) h.reset();
+    for (const r of this.roads) r.reset();
+    for (const t of this.trains) t.reset();
     this.bullets = [];
     this.player.prevJump = input.jump; // en hållen hoppknapp ska inte hoppa direkt
     this.snapCamera();
@@ -183,6 +225,7 @@ export class Game {
         this.collectFood();
         this.handleEnemies(dt, input);
         if (this.state === 'playing') this.handleHunters(dt);
+        if (this.state === 'playing') this.handleTraffic(dt);
 
         const goal = this.level.goal;
         if (this.state !== 'playing') break; // en fiende tog sista livet

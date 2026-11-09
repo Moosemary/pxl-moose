@@ -3,7 +3,7 @@
 export const TILE = 16;
 
 // Tecken som är fasta (man kan stå på dem).
-const SOLID = new Set(['#', 'S']);
+const SOLID = new Set(['#', 'S', '=', '-']);
 const WATER = '~';
 
 export function parseLevel(rows, biomes) {

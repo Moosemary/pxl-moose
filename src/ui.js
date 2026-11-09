@@ -72,7 +72,7 @@ export function drawTitle(ctx, game) {
   text(ctx, '← → eller A D   gå', 40, 76);
   text(ctx, 'Mellanslag eller ↑   hoppa', 40, 88);
   text(ctx, 'Hoppa på björnar, vargar och hundar.', 40, 104);
-  text(ctx, 'Akta dig för jägarna! Hundar förlamar.', 40, 116);
+  text(ctx, 'Akta dig för jägare och trafik!', 40, 116);
   text(ctx, 'Ta dig till flaggan. Du har tre liv.', 40, 128);
 
   if (blink(game)) {

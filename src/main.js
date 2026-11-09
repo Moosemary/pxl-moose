@@ -4,7 +4,7 @@ import { input } from './input.js';
 import { startLoop, STEP } from './loop.js';
 import { VIEW_W, VIEW_H } from './config.js';
 import { Game } from './game.js';
-import { COLORS, drawGround, drawStone, drawGoal, drawStartMarker, drawWater } from './tiles.js';
+import { COLORS, drawGround, drawStone, drawGoal, drawStartMarker, drawWater, drawRoad, drawRail } from './tiles.js';
 import { drawBullets } from './hunters.js';
 import { drawFood } from './foodSprites.js';
 import { drawPopups, drawHud, drawTitle, drawDying, drawGameOver, drawWon, drawDebug } from './ui.js';
@@ -51,11 +51,16 @@ function drawLevel(camX) {
       const ch = level.tileAt(col, row);
       const x = col * TILE - camX;
       const y = row * TILE;
-      if (ch === '#') drawGround(ctx, x, y, col, row, level.tileAt(col, row - 1) !== '#');
+      if (ch === '#') drawGround(ctx, x, y, col, row, !'#=-'.includes(level.tileAt(col, row - 1)));
+      else if (ch === '=') drawRoad(ctx, x, y, col, row);
+      else if (ch === '-') drawRail(ctx, x, y, col, row);
       else if (ch === 'S') drawStone(ctx, x, y, col, row);
       else if (ch === '~') drawWater(ctx, x, y, col, row, false, game.ticks, 'base');
     }
   }
+
+  for (const road of game.roads) road.draw(ctx, camX, VIEW_H);
+  for (const train of game.trains) train.draw(ctx, camX, VIEW_H, game.ticks);
 
   for (const h of game.hunters) {
     if (h.cx + 20 < camX || h.cx - 20 > camX + VIEW_W) continue;

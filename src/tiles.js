@@ -98,3 +98,28 @@ export function drawWater(ctx, x, y, col, row, isSurface, ticks, mode) {
   const gy = Math.floor(hash(row, col, Math.floor(ticks / 30)) * TILE);
   px(ctx, '#d6eef7', x + gx, y + gy, 1, 1);
 }
+
+export function drawRoad(ctx, x, y, col, row) {
+  px(ctx, '#4a4a48', x, y, TILE, TILE);
+  px(ctx, '#8a8780', x, y, TILE, 2); // kantsten
+  px(ctx, '#5a5a57', x, y + 2, TILE, 1);
+  if (col % 2 === 0) px(ctx, '#d8d0b8', x + 2, y + 7, 10, 1); // mittlinje
+  for (let i = 0; i < 4; i++) {
+    const dx = Math.floor(hash(col, row, i) * TILE);
+    const dy = 3 + Math.floor(hash(col, row, i + 9) * 12);
+    px(ctx, '#3a3a38', x + dx, y + dy, 2, 1);
+  }
+}
+
+export function drawRail(ctx, x, y, col, row) {
+  px(ctx, '#6a655c', x, y, TILE, TILE); // makadam
+  for (let i = 0; i < 6; i++) {
+    const dx = Math.floor(hash(col, row, i) * TILE);
+    const dy = 4 + Math.floor(hash(col, row, i + 9) * 11);
+    px(ctx, i % 2 ? '#8a857a' : '#4f4b44', x + dx, y + dy, 2, 1);
+  }
+  px(ctx, '#5a3f28', x + 2, y + 1, 4, 5); // syllar
+  px(ctx, '#5a3f28', x + 10, y + 1, 4, 5);
+  px(ctx, '#a9a69d', x, y, TILE, 2); // räls
+  px(ctx, '#d0cdc4', x, y, TILE, 1);
+}
