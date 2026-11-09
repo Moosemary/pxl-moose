@@ -4,7 +4,8 @@ import { input } from './input.js';
 import { startLoop, STEP } from './loop.js';
 import { VIEW_W, VIEW_H } from './config.js';
 import { Game } from './game.js';
-import { COLORS, drawGround, drawStone, drawGoal, drawStartMarker, drawWater, drawRoad, drawRail } from './tiles.js';
+import { drawGround, drawStone, drawGoal, drawStartMarker, drawWater, drawRoad, drawRail } from './tiles.js';
+import { drawBackdrop, drawGroundDecor, drawRoadSigns, paletteFor } from './backdrop.js';
 import { drawBullets } from './hunters.js';
 import { drawFood } from './foodSprites.js';
 import { drawPopups, drawHud, drawTitle, drawDying, drawGameOver, drawWon, drawDebug } from './ui.js';
@@ -19,6 +20,8 @@ const ctx = buffer.getContext('2d');
 
 const level = parseLevel(LEVEL_ROWS, BIOMES);
 const game = new Game(level);
+// Kolumner där det står föremål eller fiender (där ritas ingen markdekor)
+const occupiedCols = new Set(level.entities.map((e) => e.col));
 
 // Mätare för att kunna kontrollera att takten är lika på alla skärmar (tryck F3).
 let tickRate = 0;
@@ -35,13 +38,6 @@ function resize() {
   screen.height = window.innerHeight;
 }
 
-function drawBackground() {
-  ctx.fillStyle = COLORS.sky;
-  ctx.fillRect(0, 0, VIEW_W, VIEW_H);
-  ctx.fillStyle = COLORS.skyFar;
-  ctx.fillRect(0, VIEW_H * 0.55, VIEW_W, VIEW_H);
-}
-
 function drawLevel(camX) {
   const firstCol = Math.floor(camX / TILE);
   const lastCol = Math.min(level.width - 1, Math.floor((camX + VIEW_W) / TILE));
@@ -51,13 +47,16 @@ function drawLevel(camX) {
       const ch = level.tileAt(col, row);
       const x = col * TILE - camX;
       const y = row * TILE;
-      if (ch === '#') drawGround(ctx, x, y, col, row, !'#=-'.includes(level.tileAt(col, row - 1)));
+      if (ch === '#') drawGround(ctx, x, y, col, row, !'#=-'.includes(level.tileAt(col, row - 1)), paletteFor(level.biomeAt(col)));
       else if (ch === '=') drawRoad(ctx, x, y, col, row);
       else if (ch === '-') drawRail(ctx, x, y, col, row);
       else if (ch === 'S') drawStone(ctx, x, y, col, row);
       else if (ch === '~') drawWater(ctx, x, y, col, row, false, game.ticks, 'base');
     }
   }
+
+  drawGroundDecor(ctx, level, camX, firstCol, lastCol, occupiedCols);
+  drawRoadSigns(ctx, game.roads, camX);
 
   for (const road of game.roads) road.draw(ctx, camX, VIEW_H);
   for (const train of game.trains) train.draw(ctx, camX, VIEW_H, game.ticks);
@@ -100,7 +99,7 @@ function drawWaterOverlay(camX) {
 
 function render() {
   const camX = Math.round(game.camera.x);
-  drawBackground();
+  drawBackdrop(ctx, camX, game.ticks, level);
   drawLevel(camX);
   if (game.state !== 'dying' || game.player.y < level.height * TILE) game.player.draw(ctx, camX);
   drawWaterOverlay(camX);

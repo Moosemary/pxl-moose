@@ -29,7 +29,7 @@ function px(ctx, color, x, y, w = 1, h = 1) {
   ctx.fillRect(x, y, w, h);
 }
 
-export function drawGround(ctx, x, y, col, row, grassOnTop) {
+export function drawGround(ctx, x, y, col, row, grassOnTop, pal = COLORS) {
   px(ctx, COLORS.dirt, x, y, TILE, TILE);
   for (let i = 0; i < 14; i++) {
     const dx = Math.floor(hash(col, row, i) * TILE);
@@ -38,11 +38,11 @@ export function drawGround(ctx, x, y, col, row, grassOnTop) {
     px(ctx, c, x + dx, y + dy, 2, 1);
   }
   if (grassOnTop) {
-    px(ctx, COLORS.grass, x, y, TILE, 4);
+    px(ctx, pal.grass, x, y, TILE, 4);
     for (let dx = 0; dx < TILE; dx += 2) {
       const len = 1 + Math.floor(hash(col, row, dx) * 3);
-      px(ctx, COLORS.grass, x + dx, y + 4, 2, len);
-      if (hash(col, row, dx + 7) < 0.4) px(ctx, COLORS.grassDark, x + dx, y + 1, 2, 1);
+      px(ctx, pal.grass, x + dx, y + 4, 2, len);
+      if (hash(col, row, dx + 7) < 0.4) px(ctx, pal.grassDark, x + dx, y + 1, 2, 1);
     }
   }
 }
