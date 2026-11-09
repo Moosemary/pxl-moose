@@ -4,6 +4,7 @@ import { input } from './input.js';
 import { startLoop, STEP } from './loop.js';
 import { VIEW_W, VIEW_H } from './config.js';
 import { Game } from './game.js';
+import { audio } from './audio.js';
 import { drawGround, drawStone, drawGoal, drawStartMarker, drawWater, drawRoad, drawRail, drawCheckpoint } from './tiles.js';
 import { drawBackdrop, drawGroundDecor, drawRoadSigns, paletteFor } from './backdrop.js';
 import { drawBullets } from './hunters.js';
@@ -20,6 +21,7 @@ const ctx = buffer.getContext('2d');
 
 const level = parseLevel(LEVEL_ROWS, BIOMES);
 const game = new Game(level);
+game.sfx = audio.play;
 // Kolumner där det står föremål eller fiender (där ritas ingen markdekor)
 const occupiedCols = new Set(level.entities.map((e) => e.col));
 

@@ -29,6 +29,7 @@ export class Player {
     this.w = 24;
     this.h = 22;
     this.level = level;
+    this.sfx = () => {}; // sätts av spelet för att kunna spela ljud
     this.respawn();
   }
 
@@ -49,6 +50,7 @@ export class Player {
     this.paralyzed = 0; // ticks kvar som älgen är förlamad (hundens skall)
     this.paraImmune = 0; // kort skydd mot ny förlamning så att man hinner fly
     this.inWater = false;
+    this.wasInWater = false;
   }
 
   update(dt, realInput) {
@@ -66,6 +68,8 @@ export class Player {
     const col = Math.floor((this.x + this.w / 2) / TILE);
     const row = Math.floor((this.y + this.h * 0.5) / TILE);
     this.inWater = this.level.isWater(col, row);
+    if (this.inWater !== this.wasInWater) this.sfx('splash');
+    this.wasInWater = this.inWater;
     const maxRun = this.inWater ? MAX_RUN * WATER_RUN : MAX_RUN;
 
     // --- Vågrät rörelse ---
@@ -99,6 +103,7 @@ export class Player {
         // Nytt tryck på hoppknappen vid ytan: hoppa upp ur vattnet (t.ex. upp på stranden)
         this.vy = -SURFACE_HOP;
         this.buffer = 0;
+        this.sfx('jump');
       } else if (input.jump) {
         // Håll knappen: simma uppåt och flyta kvar vid ytan
         const target = atSurface ? 0 : -SWIM_UP_SPEED;
@@ -115,6 +120,7 @@ export class Player {
         this.buffer = 0;
         this.coyote = 0;
         this.onGround = false;
+        this.sfx('jump');
       }
 
       // --- Tyngdkraft ---

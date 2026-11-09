@@ -2,6 +2,7 @@
 import { VIEW_W, VIEW_H, START_LIVES } from './config.js';
 import { COLORS } from './tiles.js';
 import { drawMoose } from './mooseSprite.js';
+import { audio } from './audio.js';
 
 const FONT = 'monospace';
 
@@ -41,11 +42,28 @@ export function drawHud(ctx, game) {
     drawHeart(ctx, 30 + i * 10, 6, i < game.lives ? '#c0452b' : '#4a3a34');
   }
   text(ctx, 'POÄNG ' + String(game.score).padStart(6, '0'), VIEW_W - 6, 6, { align: 'right' });
+  drawSpeaker(ctx, VIEW_W - 16, 18);
 }
 
 export function drawPopups(ctx, game, camX) {
   for (const pop of game.popups) {
     text(ctx, pop.text, Math.round(pop.x - camX), Math.round(pop.y), { align: 'center', color: '#e0c050' });
+  }
+}
+
+// Liten högtalare (M slår av/på). Röd snedstreck när ljudet är av.
+function drawSpeaker(ctx, x, y) {
+  const on = !audio.muted;
+  ctx.fillStyle = on ? COLORS.text : '#8a8780';
+  ctx.fillRect(x, y + 2, 2, 3);
+  ctx.fillRect(x + 2, y + 1, 1, 5);
+  ctx.fillRect(x + 3, y, 1, 7);
+  if (on) {
+    ctx.fillRect(x + 5, y + 2, 1, 3);
+    ctx.fillRect(x + 7, y + 1, 1, 5);
+  } else {
+    ctx.fillStyle = '#c0452b';
+    for (let i = 0; i < 6; i++) ctx.fillRect(x + 5 + i * 0.8, y + 1 + i, 1, 1);
   }
 }
 
@@ -76,6 +94,9 @@ export function drawTitle(ctx, game) {
   text(ctx, 'Akta dig för jägare och trafik!', 40, 116);
   text(ctx, 'Rösen sparar var du börjar om.', 40, 128);
   text(ctx, 'Ta dig till flaggan. Du har tre liv.', 40, 140);
+
+  drawSpeaker(ctx, VIEW_W / 2 - 52, 192);
+  text(ctx, 'M: ljud av/på', VIEW_W / 2 - 40, 192, { color: '#cfc8b0' });
 
   if (blink(game)) {
     text(ctx, 'Tryck mellanslag eller Enter', VIEW_W / 2, 170, { align: 'center', color: '#e0c050' });

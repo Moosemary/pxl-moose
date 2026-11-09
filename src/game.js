@@ -18,6 +18,8 @@ export class Game {
   constructor(level) {
     this.level = level;
     this.player = new Player(level);
+    this.sfx = () => {}; // main.js kopplar in riktiga ljud
+    this.player.sfx = (name) => this.sfx(name);
     this.levelPxW = level.width * TILE;
     this.state = 'title'; // 'title' | 'playing' | 'dying' | 'gameover' | 'won'
     this.lives = START_LIVES;
@@ -91,6 +93,7 @@ export class Game {
       const stomp = p.vy > 0 && p.y + p.h - e.y < e.h * 0.6 + 4;
       if (stomp) {
         e.kill();
+        this.sfx('stomp');
         p.vy = -(input.jump ? STOMP_BOUNCE_HELD : STOMP_BOUNCE);
         p.onGround = false;
         const pts = e.type.points;
@@ -109,16 +112,23 @@ export class Game {
     const p = this.player;
     p.paralyzed = PARALYZE_TICKS;
     p.vx = 0;
+    this.sfx('bark');
     dog.bark = PARALYZE_TICKS;
     this.popups.push({ x: dog.x + dog.w / 2, y: dog.y - 14, text: 'VOFF!', life: 70, rise: 0.05 });
   }
 
   // Jägare siktar och skjuter; skotten flyger rakt fram tills de träffar något.
   handleHunters(dt) {
+    const before = this.bullets.length;
     for (const h of this.hunters) h.update(this.player, this.level, this.bullets);
     for (const h of this.footHunters) {
       h.update(this.player, this.level, this.bullets, this.camera.x, VIEW_W, dt);
     }
+    for (const h of [...this.hunters, ...this.footHunters]) {
+      if (h.state === 'aim' && h.prevState !== 'aim') this.sfx('aim');
+      h.prevState = h.state;
+    }
+    if (this.bullets.length > before) this.sfx('shot');
     this.bullets = updateBullets(this.bullets, dt, this.level, this.player, (b) =>
       this.hurtPlayer(b.x - Math.sign(b.vx || 1) * 8, 'Jägaren sköt dig!'),
     );
@@ -136,7 +146,11 @@ export class Game {
       }
     }
     for (const train of this.trains) {
+      const prev = train.state;
       train.update(dt, this.camera.x, VIEW_W);
+      const inView = train.lane.left < this.camera.x + VIEW_W + 80 && train.lane.right > this.camera.x - 80;
+      if (inView && train.state === 'warn' && this.ticks % 28 === 0) this.sfx('bell');
+      if (inView && prev !== 'run' && train.state === 'run') this.sfx('horn');
       if (train.hit(p) && p.invuln === 0) {
         this.hurtPlayer(train.x + 90, 'Tåget körde på dig!');
         if (this.state !== 'playing') return;
@@ -148,6 +162,7 @@ export class Game {
   hurtPlayer(sourceX, text) {
     const p = this.player;
     this.lives--;
+    this.sfx('hurt');
     this.deathText = text;
     p.paralyzed = 0; // en träff gör slut på förlamningen
     p.paraImmune = 90;
@@ -171,6 +186,7 @@ export class Game {
       const y = (c.row + 1) * TILE;
       if (p.x < x + 14 && p.x + p.w > x + 2 && p.y < y && p.y + p.h > y - 26) {
         c.active = true;
+        this.sfx('checkpoint');
         this.checkpoint = c;
         this.popups.push({ x: x + TILE / 2, y: y - 34, text: 'Kontrollpunkt!', life: 80, rise: 0.15 });
       }
@@ -185,6 +201,7 @@ export class Game {
       this.nextLifeAt += EXTRA_LIFE_EVERY;
       if (this.lives < MAX_LIVES) {
         this.lives++;
+        this.sfx('oneUp');
         const p = this.player;
         this.popups.push({ x: p.x + p.w / 2, y: p.y - 18, text: 'EXTRALIV!', life: 90, rise: 0.2 });
       }
@@ -202,6 +219,7 @@ export class Game {
         it.taken = true;
         const pts = FOOD[it.ch].points;
         this.addScore(pts);
+        this.sfx({ k: 'eatK', g: 'eatG', b: 'eatB' }[it.ch]);
         this.popups.push({ x: it.col * TILE + TILE / 2, y: it.row * TILE, text: '+' + pts, life: 40 });
       }
     }
@@ -224,6 +242,7 @@ export class Game {
     this.resetItems();
     this.spawn(input);
     this.state = 'playing';
+    this.sfx('start');
   }
 
   spawn(input) {
@@ -268,11 +287,13 @@ export class Game {
         if (p.fellOut) {
           this.lives--;
           this.deathText = 'Du ramlade!';
+          this.sfx('fall');
           this.state = 'dying';
           this.timer = DEATH_PAUSE;
         } else if (goal && p.x + p.w > goal.col * TILE + 6) {
           this.state = 'won';
           this.timer = END_LOCKOUT;
+          this.sfx('win');
         }
         break;
       }
@@ -285,6 +306,7 @@ export class Game {
           } else {
             this.state = 'gameover';
             this.timer = END_LOCKOUT;
+            this.sfx('gameOver');
           }
         }
         break;
