@@ -103,6 +103,13 @@ export function drawTitle(ctx, game) {
   }
 }
 
+export function drawPaused(ctx) {
+  dim(ctx, 0.6);
+  text(ctx, 'PAUS', VIEW_W / 2, 70, { size: 28, align: 'center' });
+  text(ctx, 'P, Esc eller mellanslag: fortsätt', VIEW_W / 2, 118, { align: 'center', color: '#e0c050' });
+  text(ctx, 'M: ljud av/på', VIEW_W / 2, 134, { align: 'center', color: '#cfc8b0' });
+}
+
 export function drawDying(ctx, game) {
   dim(ctx, 0.35);
   text(ctx, game.deathText || 'Du ramlade!', VIEW_W / 2, VIEW_H / 2 - 8, { size: 16, align: 'center' });

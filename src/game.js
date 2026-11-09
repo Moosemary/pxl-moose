@@ -9,6 +9,7 @@ import { Road, Train, VEHICLE_TYPES, findLane } from './traffic.js';
 
 const DEATH_PAUSE = 60; // ticks (1 s) efter att ett liv gått förlorat
 const END_LOCKOUT = 45; // så att man inte råkar hoppa förbi slutskärmen
+const SPAWN_INVULN = 60; // kort skydd när man börjar om, så att man hinner se sig omkring
 const INVULN_TICKS = 100; // oskadlig en stund efter en träff
 const PARALYZE_TICKS = 130; // så länge älgen är förlamad av hundens skall
 const STOMP_BOUNCE = 230; // studs när man hoppar på en fiende
@@ -22,6 +23,7 @@ export class Game {
     this.player.sfx = (name) => this.sfx(name);
     this.levelPxW = level.width * TILE;
     this.state = 'title'; // 'title' | 'playing' | 'dying' | 'gameover' | 'won'
+    this.paused = false;
     this.lives = START_LIVES;
     this.score = 0;
     this.nextLifeAt = EXTRA_LIFE_EVERY;
@@ -254,12 +256,30 @@ export class Game {
     for (const t of this.trains) t.reset();
     this.bullets = [];
     this.player.prevJump = input.jump; // en hållen hoppknapp ska inte hoppa direkt
+    this.player.invuln = SPAWN_INVULN;
     this.snapCamera();
   }
 
   update(dt, input) {
     this.ticks++;
     const start = input.consumeStart();
+    const pausePressed = input.consumePause?.() ?? false;
+    const blurred = input.consumeBlur?.() ?? false;
+
+    // Paus: P/Esc växlar, och spelet pausas när fönstret tappar fokus.
+    if (this.state === 'playing') {
+      if (pausePressed) this.paused = !this.paused;
+      else if (blurred) this.paused = true;
+    } else {
+      this.paused = false;
+    }
+    if (this.paused) {
+      if (start) {
+        this.paused = false;
+        this.player.prevJump = input.jump; // mellanslag som återupptar ska inte hoppa
+      }
+      return;
+    }
     if (this.timer > 0) this.timer--;
     for (const pop of this.popups) {
       pop.y -= pop.rise ?? 0.5;

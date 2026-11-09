@@ -9,7 +9,7 @@ import { drawGround, drawStone, drawGoal, drawStartMarker, drawWater, drawRoad, 
 import { drawBackdrop, drawGroundDecor, drawRoadSigns, paletteFor } from './backdrop.js';
 import { drawBullets } from './hunters.js';
 import { drawFood } from './foodSprites.js';
-import { drawPopups, drawHud, drawTitle, drawDying, drawGameOver, drawWon, drawDebug } from './ui.js';
+import { drawPaused, drawPopups, drawHud, drawTitle, drawDying, drawGameOver, drawWon, drawDebug } from './ui.js';
 
 const screen = document.getElementById('game');
 const sctx = screen.getContext('2d');
@@ -36,8 +36,10 @@ function update(dt) {
 }
 
 function resize() {
-  screen.width = window.innerWidth;
-  screen.height = window.innerHeight;
+  // Full upplösning på skärmen (även på skarpa skärmar), så pixlarna blir tydliga
+  const dpr = window.devicePixelRatio || 1;
+  screen.width = Math.round(window.innerWidth * dpr);
+  screen.height = Math.round(window.innerHeight * dpr);
 }
 
 function drawLevel(camX) {
@@ -132,6 +134,8 @@ function render() {
       drawHud(ctx, game);
   }
 
+  if (game.paused) drawPaused(ctx);
+
   if (input.debug) {
     const now = performance.now();
     if (now - rateStart >= 1000) {
@@ -142,10 +146,11 @@ function render() {
     drawDebug(ctx, game, tickRate, Math.round(1 / STEP));
   }
 
-  // Skala upp bufferten med heltalsfaktor, centrerad.
-  const scale = Math.max(1, Math.floor(Math.min(screen.width / VIEW_W, screen.height / VIEW_H)));
-  const w = VIEW_W * scale;
-  const h = VIEW_H * scale;
+  // Skala upp bufferten med heltalsfaktor (eller ner om fönstret är mycket litet), centrerad.
+  const fit = Math.min(screen.width / VIEW_W, screen.height / VIEW_H);
+  const scale = fit >= 1 ? Math.floor(fit) : fit;
+  const w = Math.round(VIEW_W * scale);
+  const h = Math.round(VIEW_H * scale);
   sctx.fillStyle = '#1b1a17';
   sctx.fillRect(0, 0, screen.width, screen.height);
   sctx.imageSmoothingEnabled = false;
