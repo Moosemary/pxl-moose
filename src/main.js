@@ -2,6 +2,7 @@ import { LEVEL_ROWS, BIOMES } from './level.js';
 import { parseLevel, TILE } from './levelParser.js';
 import { input } from './input.js';
 import { startLoop, STEP } from './loop.js';
+import { Player } from './player.js';
 import { COLORS, drawGround, drawStone, drawGoal, drawStartMarker } from './tiles.js';
 
 // Spelets egen låga upplösning – skalas upp i heltal så pixlarna blir tydliga.
@@ -19,9 +20,16 @@ const ctx = buffer.getContext('2d');
 const level = parseLevel(LEVEL_ROWS, BIOMES);
 const levelPxW = level.width * TILE;
 
-// Kameran (i steg 4 följer den älgen i stället).
+const player = new Player(level);
+
+// Kameran följer älgen och lämnar lite mer utrymme framför den än bakom.
 const camera = { x: 0 };
-const CAMERA_SPEED = 180; // pixlar per sekund
+const CAMERA_LEAD = VIEW_W * 0.4; // älgen hålls ca 40 % in från vänstra kanten
+function cameraTarget() {
+  const t = player.x + player.w / 2 - CAMERA_LEAD;
+  return Math.max(0, Math.min(t, levelPxW - VIEW_W));
+}
+camera.x = cameraTarget();
 
 // Mätare för att kunna kontrollera att takten är lika på alla skärmar.
 let ticks = 0;
@@ -32,9 +40,13 @@ let rateStart = performance.now();
 function update(dt) {
   ticks++;
   rateTicks++;
-  if (input.left) camera.x -= CAMERA_SPEED * dt;
-  if (input.right) camera.x += CAMERA_SPEED * dt;
-  camera.x = Math.max(0, Math.min(camera.x, levelPxW - VIEW_W));
+  player.update(dt, input);
+
+  // Tillfälligt: ramlar man i ett hål börjar man om vid start.
+  // (I steg 5 blir det i stället ett förlorat liv.)
+  if (player.fellOut) player.respawn();
+
+  camera.x += (cameraTarget() - camera.x) * 0.15;
 }
 
 function resize() {
@@ -75,23 +87,24 @@ function drawDebug() {
     rateTicks = 0;
     rateStart = now;
   }
-  const col = Math.floor((camera.x + VIEW_W / 2) / TILE);
+  const col = Math.floor((player.x + player.w / 2) / TILE);
   ctx.font = '8px monospace';
   ctx.textBaseline = 'top';
   ctx.textAlign = 'left';
   ctx.fillStyle = '#00000088';
   ctx.fillRect(2, 2, 150, 34);
   ctx.fillStyle = COLORS.text;
-  ctx.fillText('pxl moose – steg 3 (test)', 5, 5);
-  ctx.fillText(`kamera ${Math.round(camera.x)}px  miljö: ${level.biomeAt(col)}`, 5, 15);
+  ctx.fillText('pxl moose – steg 4 (test)', 5, 5);
+  ctx.fillText(`x ${Math.round(player.x)}  miljö: ${level.biomeAt(col)}`, 5, 15);
   ctx.fillText(`uppdateringar/s: ${tickRate} (ska vara ${Math.round(1 / STEP)})`, 5, 25);
   ctx.textAlign = 'center';
-  ctx.fillText('← → eller A D scrollar kameran', VIEW_W / 2, VIEW_H - 12);
+  ctx.fillText('← → / A D: gå    mellanslag / ↑: hoppa', VIEW_W / 2, VIEW_H - 12);
 }
 
 function render() {
   drawBackground();
   drawLevel();
+  player.draw(ctx, Math.round(camera.x));
   drawDebug();
 
   // Skala upp bufferten med heltalsfaktor, centrerad.
