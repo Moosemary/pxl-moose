@@ -14,9 +14,12 @@
 //   g   granskott (15 poäng)
 //   b   blåbärsris (25 poäng)
 //
+//   B   björn (går fram och tillbaka, 150 poäng om man hoppar på den)
+//   W   varg  (snabbare, 100 poäng)
+//
 // Kommer i senare steg (ignoreras än så länge):
 //   ~ vatten    = väg
-//   B björn     W varg      H jägare med hund            J jägare i torn
+//   H jägare med hund            J jägare i torn
 //   C bil       U buss      R tåg
 //
 // Ett HÅL är bara en lucka i marken.
@@ -33,7 +36,7 @@ export const LEVEL_ROWS = [
   '                                    g     SS                                              ',
   '        b                           S    SSS              bb  kk                          ',
   '        S     kkk     kk     b     SS   SSSS          gg      SS                          ',
-  ' P  k  SS          gggSS          SSS  SSSSS   k k k  SS      SSS   g g k b         G     ',
+  ' P  k  SS  W       gggSS          SSS  SSSSS   k kBk  SS      SSS W g g k b     B   G     ',
   '##############   ###########   ##########################    #############################',
   '##############   ###########   ##########################    #############################',
 ];

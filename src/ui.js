@@ -71,17 +71,17 @@ export function drawTitle(ctx, game) {
   text(ctx, 'Så spelar du', 40, 62, { color: '#e0c050' });
   text(ctx, '← → eller A D   gå', 40, 76);
   text(ctx, 'Mellanslag eller ↑   hoppa', 40, 88);
-  text(ctx, 'Ta dig till flaggan i slutet.', 40, 104);
-  text(ctx, 'Ramla inte i hålen. Du har tre liv.', 40, 116);
+  text(ctx, 'Hoppa på björnar och vargar.', 40, 104);
+  text(ctx, 'Ta dig till flaggan. Du har tre liv.', 40, 116);
 
   if (blink(game)) {
     text(ctx, 'Tryck mellanslag eller Enter', VIEW_W / 2, 170, { align: 'center', color: '#e0c050' });
   }
 }
 
-export function drawDying(ctx) {
+export function drawDying(ctx, game) {
   dim(ctx, 0.35);
-  text(ctx, 'Du ramlade!', VIEW_W / 2, VIEW_H / 2 - 8, { size: 16, align: 'center' });
+  text(ctx, game.deathText || 'Du ramlade!', VIEW_W / 2, VIEW_H / 2 - 8, { size: 16, align: 'center' });
 }
 
 export function drawGameOver(ctx, game) {

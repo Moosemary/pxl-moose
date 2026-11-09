@@ -1,6 +1,7 @@
 // Älgens fysik: tyngdkraft, gå, hoppa och kollision mot mark och stenar.
 import { TILE } from './levelParser.js';
 import { drawMoose } from './mooseSprite.js';
+import { moveBodyX, moveBodyY } from './physics.js';
 
 // Alla värden är i pixlar och sekunder.
 const GRAVITY = 1100;
@@ -35,6 +36,7 @@ export class Player {
     this.coyote = 0;
     this.buffer = 0;
     this.prevJump = false;
+    this.invuln = 0; // ticks kvar av oskadlighet efter en träff
   }
 
   update(dt, input) {
@@ -81,55 +83,11 @@ export class Player {
   }
 
   moveX(dx) {
-    this.x += dx;
-    const top = Math.floor(this.y / TILE);
-    const bottom = Math.floor((this.y + this.h - 0.001) / TILE);
-    if (dx > 0) {
-      const col = Math.floor((this.x + this.w - 0.001) / TILE);
-      for (let row = top; row <= bottom; row++) {
-        if (this.level.isSolid(col, row)) {
-          this.x = col * TILE - this.w;
-          this.vx = 0;
-          break;
-        }
-      }
-    } else if (dx < 0) {
-      const col = Math.floor(this.x / TILE);
-      for (let row = top; row <= bottom; row++) {
-        if (this.level.isSolid(col, row)) {
-          this.x = (col + 1) * TILE;
-          this.vx = 0;
-          break;
-        }
-      }
-    }
+    moveBodyX(this, this.level, dx);
   }
 
   moveY(dy) {
-    this.y += dy;
-    this.onGround = false;
-    const left = Math.floor(this.x / TILE);
-    const right = Math.floor((this.x + this.w - 0.001) / TILE);
-    if (dy > 0) {
-      const row = Math.floor((this.y + this.h - 0.001) / TILE);
-      for (let col = left; col <= right; col++) {
-        if (this.level.isSolid(col, row)) {
-          this.y = row * TILE - this.h;
-          this.vy = 0;
-          this.onGround = true;
-          break;
-        }
-      }
-    } else if (dy < 0) {
-      const row = Math.floor(this.y / TILE);
-      for (let col = left; col <= right; col++) {
-        if (this.level.isSolid(col, row)) {
-          this.y = (row + 1) * TILE;
-          this.vy = 0;
-          break;
-        }
-      }
-    }
+    moveBodyY(this, this.level, dy);
   }
 
   // Nedanför banan = ramlat i ett hål.
@@ -138,6 +96,7 @@ export class Player {
   }
 
   draw(ctx, camX) {
+    if (this.invuln > 0 && Math.floor(this.invuln / 4) % 2 === 0) return; // blinkar
     drawMoose(
       ctx,
       this.x + this.w / 2 - camX,

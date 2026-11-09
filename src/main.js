@@ -55,6 +55,11 @@ function drawLevel(camX) {
     }
   }
 
+  for (const e of game.enemies) {
+    if (e.removed || e.x + e.w < camX || e.x > camX + VIEW_W) continue;
+    e.draw(ctx, camX);
+  }
+
   for (const it of game.items) {
     if (it.taken || it.col < firstCol || it.col > lastCol) continue;
     const bob = Math.round(Math.sin(game.ticks / 15 + it.col));
@@ -78,7 +83,7 @@ function render() {
       break;
     case 'dying':
       drawHud(ctx, game);
-      drawDying(ctx);
+      drawDying(ctx, game);
       break;
     case 'gameover':
       drawHud(ctx, game);
