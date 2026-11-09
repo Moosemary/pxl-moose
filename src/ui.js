@@ -42,6 +42,12 @@ export function drawHud(ctx, game) {
   text(ctx, 'POÄNG ' + String(game.score).padStart(6, '0'), VIEW_W - 6, 6, { align: 'right' });
 }
 
+export function drawPopups(ctx, game, camX) {
+  for (const pop of game.popups) {
+    text(ctx, pop.text, Math.round(pop.x - camX), Math.round(pop.y), { align: 'center', color: '#e0c050' });
+  }
+}
+
 function dim(ctx, alpha) {
   ctx.fillStyle = `rgba(20, 18, 14, ${alpha})`;
   ctx.fillRect(0, 0, VIEW_W, VIEW_H);

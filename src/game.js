@@ -2,6 +2,7 @@
 import { TILE } from './levelParser.js';
 import { Player } from './player.js';
 import { VIEW_W, START_LIVES } from './config.js';
+import { FOOD } from './foodSprites.js';
 
 const DEATH_PAUSE = 60; // ticks (1 s) efter att ett liv gått förlorat
 const END_LOCKOUT = 45; // så att man inte råkar hoppa förbi slutskärmen
@@ -17,7 +18,34 @@ export class Game {
     this.timer = 0;
     this.ticks = 0;
     this.camera = { x: 0 };
+    this.items = [];
+    this.popups = []; // flytande "+10" när man tar mat
+    this.resetItems();
     this.snapCamera();
+  }
+
+  // Alla matföremål i banan (tecken k, g, b) görs till föremål som kan plockas.
+  resetItems() {
+    this.items = this.level.entities
+      .filter((e) => FOOD[e.ch])
+      .map((e) => ({ ch: e.ch, col: e.col, row: e.row, taken: false }));
+    this.popups = [];
+  }
+
+  collectFood() {
+    const p = this.player;
+    for (const it of this.items) {
+      if (it.taken) continue;
+      const ix = it.col * TILE + 2;
+      const iy = it.row * TILE + 2;
+      const hit = p.x < ix + 12 && p.x + p.w > ix && p.y < iy + 12 && p.y + p.h > iy;
+      if (hit) {
+        it.taken = true;
+        const pts = FOOD[it.ch].points;
+        this.score += pts;
+        this.popups.push({ x: it.col * TILE + TILE / 2, y: it.row * TILE, text: '+' + pts, life: 40 });
+      }
+    }
   }
 
   cameraTarget() {
@@ -33,6 +61,7 @@ export class Game {
   startRun(input) {
     this.lives = START_LIVES;
     this.score = 0;
+    this.resetItems();
     this.spawn(input);
     this.state = 'playing';
   }
@@ -47,6 +76,11 @@ export class Game {
     this.ticks++;
     const start = input.consumeStart();
     if (this.timer > 0) this.timer--;
+    for (const pop of this.popups) {
+      pop.y -= 0.5;
+      pop.life--;
+    }
+    this.popups = this.popups.filter((pop) => pop.life > 0);
 
     switch (this.state) {
       case 'title':
@@ -57,6 +91,7 @@ export class Game {
         const p = this.player;
         p.update(dt, input);
         this.camera.x += (this.cameraTarget() - this.camera.x) * 0.15;
+        this.collectFood();
 
         const goal = this.level.goal;
         if (p.fellOut) {

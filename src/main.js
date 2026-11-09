@@ -5,7 +5,8 @@ import { startLoop, STEP } from './loop.js';
 import { VIEW_W, VIEW_H } from './config.js';
 import { Game } from './game.js';
 import { COLORS, drawGround, drawStone, drawGoal, drawStartMarker } from './tiles.js';
-import { drawHud, drawTitle, drawDying, drawGameOver, drawWon, drawDebug } from './ui.js';
+import { drawFood } from './foodSprites.js';
+import { drawPopups, drawHud, drawTitle, drawDying, drawGameOver, drawWon, drawDebug } from './ui.js';
 
 const screen = document.getElementById('game');
 const sctx = screen.getContext('2d');
@@ -54,6 +55,12 @@ function drawLevel(camX) {
     }
   }
 
+  for (const it of game.items) {
+    if (it.taken || it.col < firstCol || it.col > lastCol) continue;
+    const bob = Math.round(Math.sin(game.ticks / 15 + it.col));
+    drawFood(ctx, it.ch, it.col * TILE - camX, it.row * TILE + bob);
+  }
+
   if (level.goal) drawGoal(ctx, level.goal.col * TILE - camX, level.goal.row * TILE);
   if (game.state === 'title') drawStartMarker(ctx, level.start.col * TILE - camX, level.start.row * TILE);
 }
@@ -63,6 +70,7 @@ function render() {
   drawBackground();
   drawLevel(camX);
   if (game.state !== 'dying' || game.player.y < level.height * TILE) game.player.draw(ctx, camX);
+  drawPopups(ctx, game, camX);
 
   switch (game.state) {
     case 'title':

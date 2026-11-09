@@ -10,8 +10,12 @@
 //   P   startpunkt
 //   G   mål
 //
+//   k   saftig kvist av sälg/vide (10 poäng)
+//   g   granskott (15 poäng)
+//   b   blåbärsris (25 poäng)
+//
 // Kommer i senare steg (ignoreras än så länge):
-//   ~ vatten    = väg       k kvist      b blåbärsris   g granskott
+//   ~ vatten    = väg
 //   B björn     W varg      H jägare med hund            J jägare i torn
 //   C bil       U buss      R tåg
 //
@@ -19,19 +23,19 @@
 // =====================================================================
 
 export const LEVEL_ROWS = [
-  '                                                                                ',
-  '                                                                                ',
-  '                                                                                ',
-  '                                                                                ',
-  '                                                                                ',
-  '                                                                                ',
-  '                                                                                ',
-  '                                          SS                                    ',
-  '                                    S    SSS                                    ',
-  '        S                          SS   SSSS                  SS                ',
-  ' P     SS             SS          SSS  SSSSS          SS      SSS                 G ',
-  '##############   ###########   ##########################    #####################',
-  '##############   ###########   ##########################    #####################',
+  '                                                                                          ',
+  '                                                                                          ',
+  '                                                                                          ',
+  '                                                                                          ',
+  '                                                                                          ',
+  '                                                                                          ',
+  '                                          kk                                              ',
+  '                                    g     SS                                              ',
+  '        b                           S    SSS              bb  kk                          ',
+  '        S     kkk     kk     b     SS   SSSS          gg      SS                          ',
+  ' P  k  SS          gggSS          SSS  SSSSS   k k k  SS      SSS   g g k b         G     ',
+  '##############   ###########   ##########################    #############################',
+  '##############   ###########   ##########################    #############################',
 ];
 
 // Miljöer anges som kolumnintervall (från och med – till och med).
