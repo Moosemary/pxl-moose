@@ -10,7 +10,7 @@
 :root {
   --bg: #1b1a17;
   --soft: #cfc8b0;
-  --accent: #e0c050;
+  --accent: #d05a37; /* varm orange */
 }
 
 html,
@@ -34,8 +34,8 @@ body {
 #top {
   flex: none;
   display: flex;
-  justify-content: center;
-  padding: 10px 12px 6px;
+  justify-content: flex-start; /* loggan ligger i linje med spelrutans vänsterkant (padding sätts av main.js) */
+  padding: 16px 12px 12px 12px;
 }
 
 #logo {
@@ -68,13 +68,13 @@ body {
 #bottom a {
   color: var(--accent);
   text-decoration: none;
-  border-bottom: 1px solid rgba(224, 192, 80, 0.4);
+  border-bottom: 1px solid rgba(208, 90, 55, 0.5);
 }
 
 #bottom a:hover,
 #bottom a:focus-visible {
-  color: #fff4c0;
-  border-bottom-color: #fff4c0;
+  color: #f08a64;
+  border-bottom-color: #f08a64;
   outline: none;
 }
 

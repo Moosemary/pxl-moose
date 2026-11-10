@@ -2,10 +2,10 @@
 import { VIEW_W, VIEW_H, START_LIVES } from './config.js';
 import { COLORS } from './tiles.js';
 import { audio } from './audio.js';
-import { drawLogo, LOGO_W } from './logo.js';
+import { drawLogo } from './logo.js';
 import { text } from './text.js';
 
-const YELLOW = '#e0c050';
+const ACCENT = '#d05a37'; // varm orange (rubriker, uppmaningar, poäng-popups)
 const SOFT = '#cfc8b0';
 const MAX_W = VIEW_W - 16; // texten ska aldrig gå ut över kanten
 
@@ -40,7 +40,7 @@ export function drawHud(ctx, game) {
 
 export function drawPopups(ctx, game, camX) {
   for (const pop of game.popups) {
-    text(ctx, pop.text, Math.round(pop.x - camX), Math.round(pop.y), { align: 'center', color: YELLOW });
+    text(ctx, pop.text, Math.round(pop.x - camX), Math.round(pop.y), { align: 'center', color: ACCENT });
   }
 }
 
@@ -72,27 +72,26 @@ function blink(game) {
 export function drawTitle(ctx, game) {
   dim(ctx, 0.62);
 
-  // Loggan (4 pixlar per ruta)
-  drawLogo(ctx, (VIEW_W - LOGO_W * 4) / 2, 12, 4);
+  // Vänsterställd layout: loggan och texten börjar på samma kant
+  const lx = 40;
+  drawLogo(ctx, lx, 14, 3);
 
-  const cx = VIEW_W / 2;
-  text(ctx, 'HUR DU SPELAR', cx, 114, { align: 'center', color: YELLOW });
-  text(ctx, 'A D eller pilar: gå', cx, 130, { align: 'center' });
-  text(ctx, 'Mellanslag eller upp: hoppa', cx, 142, { align: 'center' });
-  text(ctx, 'Hoppa på fiender, samla mat', cx, 154, { align: 'center' });
-  text(ctx, 'Akta dig för jägare och trafik', cx, 166, { align: 'center' });
-  text(ctx, 'Rösen sparar var du börjar om', cx, 178, { align: 'center' });
+  text(ctx, 'HUR DU SPELAR', lx, 98, { color: ACCENT });
+  text(ctx, 'A D eller pilar: gå', lx, 112);
+  text(ctx, 'Mellanslag eller upp: hoppa', lx, 123);
+  text(ctx, 'Hoppa på fiender, samla mat', lx, 134);
+  text(ctx, 'Akta dig för jägare och trafik', lx, 145);
+  text(ctx, 'Rösen sparar var du börjar om', lx, 156);
 
-  if (blink(game)) {
-    text(ctx, 'Tryck mellanslag eller Enter', cx, 196, { align: 'center', color: YELLOW });
-  }
-  text(ctx, 'P: paus    M: ljud av/på', cx, 211, { align: 'center', color: SOFT });
+  if (blink(game)) text(ctx, 'Tryck mellanslag eller Enter', lx, 178, { color: ACCENT });
+  text(ctx, 'P: paus', lx, 198, { color: SOFT });
+  text(ctx, 'M: ljud av/på', lx, 210, { color: SOFT });
 }
 
 export function drawPaused(ctx) {
   dim(ctx, 0.6);
   text(ctx, 'PAUS', VIEW_W / 2, 70, { size: 32, align: 'center' });
-  text(ctx, 'P, Esc eller mellanslag: fortsätt', VIEW_W / 2, 118, { align: 'center', color: YELLOW, maxWidth: MAX_W });
+  text(ctx, 'P, Esc eller mellanslag: fortsätt', VIEW_W / 2, 118, { align: 'center', color: ACCENT, maxWidth: MAX_W });
   text(ctx, 'M: ljud av/på', VIEW_W / 2, 134, { align: 'center', color: SOFT });
 }
 
@@ -110,17 +109,17 @@ export function drawGameOver(ctx, game) {
   text(ctx, 'MOOSE OVER', VIEW_W / 2, 62, { size: 24, align: 'center', color: '#c0452b' });
   text(ctx, 'Poäng: ' + game.score, VIEW_W / 2, 108, { size: 16, align: 'center', maxWidth: MAX_W });
   if (game.timer === 0 && blink(game)) {
-    text(ctx, 'Tryck mellanslag för att börja om', VIEW_W / 2, 150, { align: 'center', color: YELLOW, maxWidth: MAX_W });
+    text(ctx, 'Tryck mellanslag för att börja om', VIEW_W / 2, 150, { align: 'center', color: ACCENT, maxWidth: MAX_W });
   }
 }
 
 export function drawWon(ctx, game) {
   dim(ctx, 0.6);
-  text(ctx, 'DU VANN!', VIEW_W / 2, 56, { size: 32, align: 'center', color: YELLOW });
+  text(ctx, 'DU VANN!', VIEW_W / 2, 56, { size: 32, align: 'center', color: ACCENT });
   text(ctx, 'Älgen nådde målet', VIEW_W / 2, 100, { size: 16, align: 'center', maxWidth: MAX_W });
   text(ctx, 'Poäng: ' + game.score, VIEW_W / 2, 124, { size: 16, align: 'center', maxWidth: MAX_W });
   if (game.timer === 0 && blink(game)) {
-    text(ctx, 'Tryck mellanslag för att spela igen', VIEW_W / 2, 160, { align: 'center', color: YELLOW, maxWidth: MAX_W });
+    text(ctx, 'Tryck mellanslag för att spela igen', VIEW_W / 2, 160, { align: 'center', color: ACCENT, maxWidth: MAX_W });
   }
 }
 

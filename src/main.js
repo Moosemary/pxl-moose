@@ -9,7 +9,7 @@ import { drawGround, drawStone, drawGoal, drawStartMarker, drawWater, drawRoad, 
 import { drawBackdrop, drawGroundDecor, drawRoadSigns, paletteFor } from './backdrop.js';
 import { drawBullets } from './hunters.js';
 import { drawFood } from './foodSprites.js';
-import { drawLogo, LOGO_W, LOGO_H } from './logo.js';
+import { drawLogoWide, LOGO_WIDE_W, LOGO_WIDE_H } from './logo.js';
 import { whenFontReady } from './text.js';
 import { drawPaused, drawPopups, drawHud, drawTitle, drawDying, drawGameOver, drawWon, drawDebug } from './ui.js';
 
@@ -37,29 +37,40 @@ function update(dt) {
   game.update(dt, input);
 }
 
+// Var spelrutan hamnar på skärmen: skalas upp med heltal (eller ner om fönstret är mycket litet), centrerad.
+function gameRect() {
+  const fit = Math.min(screen.width / VIEW_W, screen.height / VIEW_H);
+  const scale = fit >= 1 ? Math.floor(fit) : fit;
+  const w = Math.round(VIEW_W * scale);
+  const h = Math.round(VIEW_H * scale);
+  return { w, h, x: Math.floor((screen.width - w) / 2), y: Math.floor((screen.height - h) / 2) };
+}
+
 function resize() {
   // Full upplösning på skärmen (även på skarpa skärmar), så pixlarna blir tydliga
   const dpr = window.devicePixelRatio || 1;
   screen.width = Math.max(1, Math.round(screen.clientWidth * dpr));
   screen.height = Math.max(1, Math.round(screen.clientHeight * dpr));
+  // Loggan i sidhuvudet ligger i linje med spelrutans vänsterkant
+  const top = document.getElementById('top');
+  if (top) top.style.paddingLeft = Math.max(0, gameRect().x / dpr) + 'px';
   drawHeaderLogo();
 }
 
-// Loggan i sidhuvudet: samma logga som på startskärmen, ritad i skarp upplösning.
+// Den liggande loggan i sidhuvudet, ritad i skarp upplösning (en logotypruta = en CSS-pixel).
 const logoCanvas = document.getElementById('logo');
 function drawHeaderLogo() {
   if (!logoCanvas || getComputedStyle(document.getElementById('top')).display === 'none') return;
   const dpr = window.devicePixelRatio || 1;
-  const s = window.innerHeight >= 760 ? 3 : 2; // pixlar per logotyprutor – större logga om det finns plats
-  logoCanvas.style.width = LOGO_W * s + 'px';
-  logoCanvas.style.height = LOGO_H * s + 'px';
-  logoCanvas.width = Math.round(LOGO_W * s * dpr);
-  logoCanvas.height = Math.round(LOGO_H * s * dpr);
+  logoCanvas.style.width = LOGO_WIDE_W + 'px';
+  logoCanvas.style.height = LOGO_WIDE_H + 'px';
+  logoCanvas.width = Math.round(LOGO_WIDE_W * dpr);
+  logoCanvas.height = Math.round(LOGO_WIDE_H * dpr);
   const lctx = logoCanvas.getContext('2d');
   lctx.setTransform(1, 0, 0, 1, 0, 0);
   lctx.clearRect(0, 0, logoCanvas.width, logoCanvas.height);
-  lctx.scale(s * dpr, s * dpr);
-  drawLogo(lctx, 0, 0, 1);
+  lctx.scale(dpr, dpr);
+  drawLogoWide(lctx, 0, 0, 1);
 }
 
 function drawLevel(camX) {
@@ -136,6 +147,7 @@ function render() {
 
   switch (game.state) {
     case 'title':
+      drawHud(ctx, game); // syns dämpat bakom startskärmen
       drawTitle(ctx, game);
       break;
     case 'dying':
@@ -166,15 +178,11 @@ function render() {
     drawDebug(ctx, game, tickRate, Math.round(1 / STEP));
   }
 
-  // Skala upp bufferten med heltalsfaktor (eller ner om fönstret är mycket litet), centrerad.
-  const fit = Math.min(screen.width / VIEW_W, screen.height / VIEW_H);
-  const scale = fit >= 1 ? Math.floor(fit) : fit;
-  const w = Math.round(VIEW_W * scale);
-  const h = Math.round(VIEW_H * scale);
+  const r = gameRect();
   sctx.fillStyle = '#1b1a17';
   sctx.fillRect(0, 0, screen.width, screen.height);
   sctx.imageSmoothingEnabled = false;
-  sctx.drawImage(buffer, Math.floor((screen.width - w) / 2), Math.floor((screen.height - h) / 2), w, h);
+  sctx.drawImage(buffer, r.x, r.y, r.w, r.h);
 }
 
 // Bara i dev-läge (npm run dev): gör det lätt att testa från webbläsarens konsol.
