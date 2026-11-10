@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 
-// På GitHub Pages ligger spelet under /pxl-moose/, lokalt under /.
+// Relativa sökvägar ('./') gör att samma bygge fungerar både på
+// https://moosemary.github.io/pxl-moose/ och på en egen domän som pxlmoose.moosemary.com.
 export default defineConfig(({ command }) => ({
-  base: command === 'build' ? '/pxl-moose/' : '/',
+  base: command === 'build' ? './' : '/',
 }));
