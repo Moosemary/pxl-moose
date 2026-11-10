@@ -50,7 +50,7 @@ const logoCanvas = document.getElementById('logo');
 function drawHeaderLogo() {
   if (!logoCanvas || getComputedStyle(document.getElementById('top')).display === 'none') return;
   const dpr = window.devicePixelRatio || 1;
-  const s = window.innerHeight >= 760 ? 2 : 1; // större logga om det finns plats
+  const s = window.innerHeight >= 760 ? 3 : 2; // pixlar per logotyprutor – större logga om det finns plats
   logoCanvas.style.width = LOGO_W * s + 'px';
   logoCanvas.style.height = LOGO_H * s + 'px';
   logoCanvas.width = Math.round(LOGO_W * s * dpr);

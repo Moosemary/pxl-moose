@@ -1,45 +1,59 @@
-// Loggan: spelets älg och ordmärket "PXL MOOSE" på en liten skylt. Ritas med kod,
-// så att den ser likadan ut i spelet och i sidhuvudet på webbsidan.
-import { drawMoose } from './mooseSprite.js';
-import { text } from './text.js';
+// Loggan: älghuvudet och ordmärket "PXL MOOSE", från konstverket pxl-moose-2-skuggad.svg,
+// omräknat till ett pixelrutnät. Ritas med kod, så den är skarp i alla storlekar och ser likadan ut
+// på startskärmen och i sidhuvudet.
+//
+//   .  tomt        a  logotypens färg        b  ögat
 
-export const LOGO_W = 140;
-export const LOGO_H = 44;
+const GRID = [
+  '............aa......................................................',
+  '............aa..aaa.................................................',
+  '.......aa...aa..aaa..aa.............................................',
+  '.......aa...aa..aaa..aa.............................................',
+  '.......aa...aa..aaa..aa.............................................',
+  '.......aaaaaaaaaaaaaaaa.............................................',
+  '.......aaaaaaaaaaaaaaaa......aaaaaa..aa...aa.aa.....................',
+  '............aa...............aa...aa.aa...aa.aa.....................',
+  '........aa..aa...............aa...aa..aa.aa..aa.....................',
+  '........aa..aa...............aa...aa...aaa...aa.....................',
+  '........aaaaaaa..............aaaaaa...aa.aa..aa.....................',
+  '....aaaaaaaaaaaaaaaaaaa......aa......aa...aa.aa.....................',
+  'aaaaaaaaaaaabbaaaaaaaaa......aa......aa...aa.aaaaaaa................',
+  'aaaaaaaaaaaabbaaaaaaaaa.............................................',
+  'aaaaaaaaaaaaaaaaaaaaaaa.............................................',
+  'aaaaaaaaaaaaaaaaaaaaaaa......aa...aa..aaaaa...aaaaa...aaaaa..aaaaaaa',
+  'aaaaaaaaaaaaaaa..aaaaaa......aaa.aaa.aa...aa.aa...aa.aa...aa.aa.....',
+  'aaaaaaaaaa...aa..aaaaaa......aaaaaaa.aa...aa.aa...aa.aa......aa.....',
+  'aaaaaaaaaa...aa..............aa.a.aa.aa...aa.aa...aa..aaaaa..aaaaaa.',
+  'aaaaaaaaaa...aa..............aa.a.aa.aa...aa.aa...aa......aa.aa.....',
+  'aaaaaaaaaa...................aa...aa.aa...aa.aa...aa.aa...aa.aa.....',
+  'aaaaaaaaaa...................aa...aa..aaaaa...aaaaa...aaaaa..aaaaaaa',
+];
+
+export const LOGO_W = GRID[0].length; // bredd i rutor
+export const LOGO_H = GRID.length; // höjd i rutor
+
+export const LOGO_DARK = { color: '#3a2b21', eye: '#f1e5c7' }; // original, för ljus bakgrund
+export const LOGO_LIGHT = { color: '#f1e5c7', eye: '#3a2b21' }; // ljus version, för mörk bakgrund
 
 /**
  * Ritar loggan med övre vänstra hörnet vid (x, y).
- * k = storlek (1 = 140×44 pixlar, 2 = dubbelt så stor).
+ * k = antal pixlar per ruta (hela tal ger skarpast resultat). colors = LOGO_DARK eller LOGO_LIGHT.
  */
-export function drawLogo(ctx, x, y, k = 1) {
-  ctx.save();
-  ctx.translate(Math.round(x), Math.round(y));
-  ctx.scale(k, k);
-
-  // Skylt med kant
-  ctx.fillStyle = '#2b1a10';
-  ctx.fillRect(0, 0, LOGO_W, LOGO_H);
-  ctx.fillStyle = '#b4c7b3';
-  ctx.fillRect(2, 2, LOGO_W - 4, LOGO_H - 4);
-  ctx.fillStyle = '#c7d6c1';
-  ctx.fillRect(2, 2, LOGO_W - 4, 3);
-  // Hörnpixlar för en lite rundad skylt
-  ctx.fillStyle = '#1b1a17';
-  for (const [cx, cy] of [[0, 0], [LOGO_W - 2, 0], [0, LOGO_H - 2], [LOGO_W - 2, LOGO_H - 2]]) {
-    ctx.fillRect(cx, cy, 2, 2);
+export function drawLogo(ctx, x, y, k = 1, colors = LOGO_LIGHT) {
+  for (let r = 0; r < GRID.length; r++) {
+    const row = GRID[r];
+    let c = 0;
+    while (c < row.length) {
+      const ch = row[c];
+      if (ch === '.') {
+        c++;
+        continue;
+      }
+      let e = c;
+      while (e < row.length && row[e] === ch) e++; // en sammanhängande rad av samma sort ritas som en rektangel
+      ctx.fillStyle = ch === 'b' ? colors.eye : colors.color;
+      ctx.fillRect(x + c * k, y + r * k, (e - c) * k, k);
+      c = e;
+    }
   }
-
-  // Mark under älgen
-  ctx.fillStyle = '#4f7a3a';
-  ctx.fillRect(2, 38, LOGO_W - 4, 4);
-  ctx.fillStyle = '#3d6230';
-  ctx.fillRect(2, 41, LOGO_W - 4, 1);
-
-  // Älgen (samma som i spelet), vänd mot ordmärket
-  drawMoose(ctx, 24, 38, 1, 0, true, 0);
-
-  // Ordmärke
-  text(ctx, 'PXL', 52, 8, { size: 8, color: '#8a3b2a', shadow: false });
-  text(ctx, 'MOOSE', 52, 18, { size: 16, color: '#3a2414', shadow: '#d8e2d0' });
-
-  ctx.restore();
 }

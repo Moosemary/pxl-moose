@@ -72,21 +72,21 @@ function blink(game) {
 export function drawTitle(ctx, game) {
   dim(ctx, 0.62);
 
-  // Loggan i dubbel storlek
-  drawLogo(ctx, (VIEW_W - LOGO_W * 2) / 2, 10, 2);
+  // Loggan (4 pixlar per ruta)
+  drawLogo(ctx, (VIEW_W - LOGO_W * 4) / 2, 12, 4);
 
   const cx = VIEW_W / 2;
-  text(ctx, 'HUR DU SPELAR', cx, 108, { align: 'center', color: YELLOW });
-  text(ctx, 'A D eller pilar: gå', cx, 124, { align: 'center' });
-  text(ctx, 'Mellanslag eller upp: hoppa', cx, 136, { align: 'center' });
-  text(ctx, 'Hoppa på fiender, samla mat', cx, 148, { align: 'center' });
-  text(ctx, 'Akta dig för jägare och trafik', cx, 160, { align: 'center' });
-  text(ctx, 'Rösen sparar var du börjar om', cx, 172, { align: 'center' });
+  text(ctx, 'HUR DU SPELAR', cx, 114, { align: 'center', color: YELLOW });
+  text(ctx, 'A D eller pilar: gå', cx, 130, { align: 'center' });
+  text(ctx, 'Mellanslag eller upp: hoppa', cx, 142, { align: 'center' });
+  text(ctx, 'Hoppa på fiender, samla mat', cx, 154, { align: 'center' });
+  text(ctx, 'Akta dig för jägare och trafik', cx, 166, { align: 'center' });
+  text(ctx, 'Rösen sparar var du börjar om', cx, 178, { align: 'center' });
 
   if (blink(game)) {
-    text(ctx, 'Tryck mellanslag eller Enter', cx, 192, { align: 'center', color: YELLOW });
+    text(ctx, 'Tryck mellanslag eller Enter', cx, 196, { align: 'center', color: YELLOW });
   }
-  text(ctx, 'P: paus    M: ljud av/på', cx, 208, { align: 'center', color: SOFT });
+  text(ctx, 'P: paus    M: ljud av/på', cx, 211, { align: 'center', color: SOFT });
 }
 
 export function drawPaused(ctx) {

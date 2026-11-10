@@ -8,3 +8,10 @@ PLAN.md
 prompt*
 ~$*
 *.docx
+
+# Exporterade filer (inte en del av spelet)
+/exports/
+
+# Designfiler (innehåller bl.a. inbäddade referensbilder) – ska inte till GitHub
+/*.svg
+*.ai

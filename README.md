@@ -66,7 +66,7 @@ Varje push till `main` bygger och publicerar spelet på GitHub Pages med GitHub 
 
 Texten använder pixeltypsnittet [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P) (SIL Open Font License 1.1). Fontfilen ligger i repot (`src/fonts/`, tillsammans med licenstexten), så ingenting hämtas från Google när någon spelar. Typsnittet saknar versalt Å (det ritas som ett vanligt A), så undvik det i versaler. Gemena å, ä, ö och versalerna Ä och Ö fungerar.
 
-Loggan ritas i [`src/logo.js`](src/logo.js) och används både på startskärmen och i sidhuvudet. Sidans footer ("Made by Moosemary Digital") ligger i [`index.html`](index.html).
+Älgen ([`src/mooseSprite.js`](src/mooseSprite.js)) och loggan ([`src/logo.js`](src/logo.js)) är omräknade från konstverket till spelets pixelrutnät och ritas med kod. Loggan används både på startskärmen och i sidhuvudet. Sidans footer ("Made by Moosemary Digital") ligger i [`index.html`](index.html).
 
 ## Kodöversikt
 
